@@ -14,7 +14,6 @@ export class InMemoryAdapter implements StorageAdapter {
   private environments = new Map<ID, Environment>();
   private flags = new Map<ID, FeatureFlag>();
 
-  // Products
   async createProduct(product: Omit<Product, 'id' | 'createdAt'>) {
     const id = createId('prod');
     const r: Product = { id, createdAt: nowIso(), ...product };
@@ -35,7 +34,6 @@ export class InMemoryAdapter implements StorageAdapter {
   }
 
   async deleteProduct(id: ID) {
-    // also cascade-delete environments and flags for that product
     for (const [envId, env] of this.environments.entries()) {
       if (env.productId === id) this.environments.delete(envId);
     }
@@ -49,7 +47,6 @@ export class InMemoryAdapter implements StorageAdapter {
     return Array.from(this.products.values());
   }
 
-  // Environments
   async createEnvironment(env: Omit<Environment, 'id' | 'createdAt'>) {
     const id = createId('env');
     const r: Environment = { id, createdAt: nowIso(), ...env };
@@ -70,7 +67,6 @@ export class InMemoryAdapter implements StorageAdapter {
   }
 
   async deleteEnvironment(id: ID) {
-    // cascade delete flags in env
     for (const [flagId, flag] of this.flags.entries()) {
       if (flag.envId === id) this.flags.delete(flagId);
     }
@@ -82,12 +78,9 @@ export class InMemoryAdapter implements StorageAdapter {
     return typeof productId === 'undefined' ? all : all.filter((e) => e.productId === productId);
   }
 
-  // FeatureFlags
   async createFeatureFlag(flag: Omit<FeatureFlag, 'id' | 'createdAt'>) {
-    // basic validation
     if (!this.products.has(flag.productId)) throw new Error(`product not found: ${flag.productId}`);
     if (!this.environments.has(flag.envId)) throw new Error(`environment not found: ${flag.envId}`);
-    // ensure required fields are present (label and enabled are now mandatory)
     if (!flag.label || typeof flag.label !== 'string') throw new Error('feature flag label is required');
     if (typeof flag.enabled !== 'boolean') throw new Error('feature flag enabled (boolean) is required');
     const id = createId('flag');
@@ -117,7 +110,6 @@ export class InMemoryAdapter implements StorageAdapter {
     return all.filter((f) => (productId ? f.productId === productId : true) && (envId ? f.envId === envId : true));
   }
 
-  // Evaluation
   async getEnabledFlagsForActor(productId: ID, envId: ID, actorId: string) {
     const flags = await this.listFeatureFlags(productId, envId);
     const enabled: FeatureFlag[] = [];
@@ -148,8 +140,6 @@ export class InMemoryAdapter implements StorageAdapter {
 
     return false;
   }
-
-  // group management removed
 }
 
 export default InMemoryAdapter;
