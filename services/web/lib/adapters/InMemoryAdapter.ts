@@ -1,9 +1,12 @@
 import type { ID, Product, Environment, FeatureFlag, GateAll, GateActors } from './types';
 import type { StorageAdapter, NewFeatureFlag } from './StorageAdapter';
-import { v4 } from 'uuid';
 
 function nowIso() {
   return new Date().toISOString();
+}
+
+function toSnakeCase(input: string): string {
+  return input.replace(/\s+/g, '_').toLowerCase();
 }
 
 export class InMemoryAdapter implements StorageAdapter {
@@ -12,7 +15,7 @@ export class InMemoryAdapter implements StorageAdapter {
   private flags = new Map<ID, FeatureFlag>();
 
   async createProduct(product: Omit<Product, 'id' | 'createdAt'>) {
-    const id = v4();
+    const id = toSnakeCase(product.name);
     const r: Product = { id, createdAt: nowIso(), ...product };
     this.products.set(id, r);
     return r;
@@ -33,13 +36,13 @@ export class InMemoryAdapter implements StorageAdapter {
   async deleteProduct(id: ID) {
     this.environments
       .entries()
-      .filter(([envId, env]) => env.productId === id)
-      .forEach(([envId, env]) => this.environments.delete(envId));
+      .filter(([, env]) => env.productId === id)
+      .forEach(([envId]) => this.environments.delete(envId));
 
     this.flags
       .entries()
-      .filter(([flagId, flag]) => flag.productId === id)
-      .forEach(([flagId, flag]) => this.flags.delete(flagId));
+      .filter(([, flag]) => flag.productId === id)
+      .forEach(([flagId]) => this.flags.delete(flagId));
 
     this.products.delete(id);
   }
@@ -49,7 +52,7 @@ export class InMemoryAdapter implements StorageAdapter {
   }
 
   async createEnvironment(env: Omit<Environment, 'id' | 'createdAt'>) {
-    const id = v4();
+    const id = toSnakeCase(env.name);
     const r: Environment = { id, createdAt: nowIso(), ...env };
     this.environments.set(id, r);
     return r;
@@ -85,7 +88,7 @@ export class InMemoryAdapter implements StorageAdapter {
     if (!flag.label || typeof flag.label !== 'string') throw new Error('feature flag label is required');
     if (typeof flag.enabled !== 'boolean') throw new Error('feature flag enabled (boolean) is required');
 
-    const id = flag.id ? String(flag.id) : v4();
+    const id = flag.id ? String(flag.id) : toSnakeCase(flag.label);
     if (this.flags.has(id)) throw new Error(`feature flag already exists: ${id}`);
 
     const r: FeatureFlag = {
