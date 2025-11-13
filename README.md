@@ -11,3 +11,9 @@ Install dependencies with
 ```
 pnpm install
 ```
+
+Run app
+
+```
+pnpm dev
+```
