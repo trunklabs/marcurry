@@ -23,5 +23,5 @@ export interface StorageAdapter {
   listFeatureFlags(productId?: ID, envId?: ID): Promise<FeatureFlag[]>;
 
   // Evaluation: return all flags that are enabled for a given actor in product+env
-  getEnabledFlagsForUser(productId: ID, envId: ID, actorId: string): Promise<FeatureFlag[]>;
+  getEnabledFlagsForActor(productId: ID, envId: ID, actorId: string): Promise<FeatureFlag[]>;
 }
