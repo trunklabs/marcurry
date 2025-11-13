@@ -135,7 +135,7 @@ export class InMemoryAdapter implements StorageAdapter {
   }
 
   private flagEnabledForActor(flag: FeatureFlag, actorId: string) {
-    if (flag.enabled === false) return false;
+    if (!flag.enabled) return false;
 
     if (!flag.gates || flag.gates.length === 0) return false;
 
