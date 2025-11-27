@@ -14,7 +14,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus } from 'lucide-react';
+import { Plus, X, Sparkles } from 'lucide-react';
 import { createProductAction } from '@/app/actions/productActions';
 import { useToast } from '@/components/ui/toast';
 
@@ -61,9 +61,11 @@ export function CreateProductInline() {
 
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => setOpen(false)} disabled={submitting}>
+              <X className="mr-1 h-4 w-4" />
               Cancel
             </Button>
             <Button type="submit" disabled={submitting}>
+              <Sparkles className="mr-1 h-4 w-4" />
               {submitting ? 'Creating...' : 'Create'}
             </Button>
           </DialogFooter>

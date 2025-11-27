@@ -55,10 +55,9 @@ export function FeaturesTable({
                     <TableCell className="font-medium">
                       <Link
                         href={`/products/${feature.productId}/environments/${feature.envId}/features/${feature.id}`}
+                        className="text-blue-600 hover:underline hover:text-blue-800 transition-colors font-semibold"
                       >
-                        <Button className="px-0" size="sm" variant="ghost">
-                          {feature.label}
-                        </Button>
+                        {feature.label}
                       </Link>
                     </TableCell>
                     <TableCell className="text-muted-foreground">{feature.productId ?? '-'}</TableCell>
@@ -74,7 +73,7 @@ export function FeaturesTable({
                         <Link
                           href={`/products/${feature.productId}/environments/${feature.envId}/features/${feature.id}`}
                         >
-                          <Button size="sm" variant="ghost">
+                          <Button size="sm" variant="outline">
                             <Pencil className="mr-1 h-4 w-4" />
                             Edit
                           </Button>
@@ -87,7 +86,7 @@ export function FeaturesTable({
                               await deleteFeature(feature.id);
                             }}
                           >
-                            <Button size="sm" variant="ghost" type="submit" className="text-destructive">
+                            <Button size="sm" variant="destructive" type="submit">
                               <Trash2 className="mr-1 h-4 w-4" />
                               Delete
                             </Button>

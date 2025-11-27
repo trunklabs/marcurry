@@ -48,7 +48,7 @@ export function EnvironmentsTable({
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Link href={`/products/${row.environment.productId}/environments/${row.environment.id}`}>
-                        <Button size="sm" variant="ghost">
+                        <Button size="sm" variant="outline">
                           <ExternalLink className="mr-1 h-4 w-4" />
                           Open
                         </Button>
@@ -60,7 +60,7 @@ export function EnvironmentsTable({
                           await deleteEnvironmentAction(row.environment.id);
                         }}
                       >
-                        <Button size="sm" variant="ghost" type="submit" className="text-destructive">
+                        <Button size="sm" variant="destructive" type="submit">
                           <Trash2 className="mr-1 h-4 w-4" />
                           Delete
                         </Button>

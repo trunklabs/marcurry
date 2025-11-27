@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus } from 'lucide-react';
+import { Plus, X, Sparkles } from 'lucide-react';
 import { GatesEditor } from '@/components/gates-editor';
 import { createFeature } from '@/app/actions/featureActions';
 import { useToast } from '@/components/ui/toast';
@@ -73,9 +73,11 @@ export function CreateFeatureInline(props: { productId?: string; envId?: string 
 
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => setOpen(false)} disabled={submitting}>
+              <X className="mr-1 h-4 w-4" />
               Cancel
             </Button>
             <Button type="submit" disabled={submitting}>
+              <Sparkles className="mr-1 h-4 w-4" />
               {submitting ? 'Creating...' : 'Create'}
             </Button>
           </DialogFooter>

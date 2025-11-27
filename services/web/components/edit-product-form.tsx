@@ -49,8 +49,8 @@ export function EditProductForm({ product }: { product: Product }) {
   }
 
   return (
-    <>
-      <form action={handleUpdate} className="max-w-xl space-y-4">
+    <div className="max-w-xl space-y-4">
+      <form id="edit-product-form" action={handleUpdate} className="space-y-4">
         <input type="hidden" name="id" value={product.id} />
         <div className="space-y-2">
           <Label htmlFor="name">Name</Label>
@@ -60,19 +60,19 @@ export function EditProductForm({ product }: { product: Product }) {
           <Label htmlFor="description">Description</Label>
           <Textarea id="description" name="description" defaultValue={product.description ?? ''} />
         </div>
-        <Button type="submit" disabled={submitting}>
-          <Save className="mr-1 h-4 w-4" />
-          {submitting ? 'Saving...' : 'Save'}
-        </Button>
       </form>
-      <div className="mt-4">
+      <div className="flex justify-end gap-2">
         <form action={handleDelete}>
           <Button type="submit" variant="destructive" disabled={deleting}>
             <Trash2 className="mr-1 h-4 w-4" />
             {deleting ? 'Deleting...' : 'Delete Product'}
           </Button>
         </form>
+        <Button type="submit" form="edit-product-form" disabled={submitting}>
+          <Save className="mr-1 h-4 w-4" />
+          {submitting ? 'Saving...' : 'Save'}
+        </Button>
       </div>
-    </>
+    </div>
   );
 }

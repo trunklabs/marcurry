@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ToggleLeft, Boxes, Layers,  } from 'lucide-react';
+import { Boxes, Layers, ToggleRight } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
@@ -10,9 +10,9 @@ import Image from 'next/image';
 export function Navigation(props: React.HTMLAttributes<HTMLElement>) {
   const pathname = usePathname();
   const navItems = [
-    { href: '/', label: 'Feature Flags', icon: ToggleLeft },
-    { href: '/products', label: 'Products', icon: Boxes },
+    { href: '/', label: 'Feature Flags', icon: ToggleRight },
     { href: '/environments', label: 'Environments', icon: Layers },
+    { href: '/products', label: 'Products', icon: Boxes },
   ];
 
   return (
@@ -34,7 +34,7 @@ export function Navigation(props: React.HTMLAttributes<HTMLElement>) {
                 const Icon = item.icon;
                 return (
                   <Link key={item.href} href={item.href}>
-                    <Button variant={pathname === item.href ? 'secondary' : 'ghost'} size="sm" className="gap-2">
+                    <Button variant={pathname === item.href ? 'secondary' : 'ghost'} size="sm" className="m-1 gap-2">
                       <Icon className="h-4 w-4" />
                       {item.label}
                     </Button>

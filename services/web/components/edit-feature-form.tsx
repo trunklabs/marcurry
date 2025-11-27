@@ -52,8 +52,8 @@ export function EditFeatureForm({ feature }: { feature: FeatureFlag }) {
   }
 
   return (
-    <>
-      <form action={handleUpdate} className="max-w-xl space-y-4">
+    <div className="max-w-xl space-y-4">
+      <form id="edit-feature-form" action={handleUpdate} className="space-y-4">
         <input type="hidden" name="id" value={feature.id} />
 
         <div className="space-y-2">
@@ -72,21 +72,20 @@ export function EditFeatureForm({ feature }: { feature: FeatureFlag }) {
         </div>
 
         {enabled && <GatesEditor initialGates={feature.gates || []} />}
-
-        <Button type="submit" disabled={submitting}>
-          <Save className="mr-1 h-4 w-4" />
-          {submitting ? 'Saving...' : 'Save'}
-        </Button>
       </form>
-
-      <div className="mt-4">
+      <div className="flex justify-end gap-2">
         <form action={handleDelete}>
           <Button type="submit" variant="destructive" disabled={deleting}>
             <Trash2 className="mr-1 h-4 w-4" />
             {deleting ? 'Deleting...' : 'Delete Feature'}
           </Button>
         </form>
+
+        <Button type="submit" form="edit-feature-form" disabled={submitting}>
+          <Save className="mr-1 h-4 w-4" />
+          {submitting ? 'Saving...' : 'Save'}
+        </Button>
       </div>
-    </>
+    </div>
   );
 }
