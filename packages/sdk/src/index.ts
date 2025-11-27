@@ -8,6 +8,7 @@ export type ClientOptions = {
 
 export type Client = {
   enabledList(actorId: string): Promise<string[]>;
+  enabled(actorId: string, featureFlagId: string): Promise<boolean>;
 };
 
 const WEB_SERVICE_URL = process.env.WEB_SERVICE_URL || 'http://localhost:3005';
@@ -37,6 +38,20 @@ export function createClient(options: ClientOptions): Client {
       if (error) return [];
 
       return flags.map((flag: FeatureFlag) => flag.id);
+    },
+
+    async enabled(actorId: string, featureFlagId: string): Promise<boolean> {
+      const [error, flags] = await tryCatch(
+        fetchFromWebService('/api/flags/enabled', {
+          productId: options.productId,
+          envId: options.envId,
+          actorId,
+        })
+      );
+
+      if (error) return false;
+
+      return Boolean(flags.find((flag: FeatureFlag) => flag.id === featureFlagId));
     },
   };
 }
