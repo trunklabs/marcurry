@@ -17,3 +17,7 @@ Run app
 ```
 pnpm dev
 ```
+
+# ERD
+
+![](./erd.png)
