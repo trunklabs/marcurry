@@ -2,15 +2,15 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Flag, BarChart3 } from 'lucide-react';
+import { ToggleLeft, Boxes } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 export function Navigation(props: React.HTMLAttributes<HTMLElement>) {
   const pathname = usePathname();
   const navItems = [
-    { href: '/', label: 'Feature Flags', icon: BarChart3 },
-    { href: '/products', label: 'Products', icon: Flag },
+    { href: '/', label: 'Feature Flags', icon: ToggleLeft },
+    { href: '/products', label: 'Products', icon: Boxes },
     // { href: '/features', label: 'Features', icon: Flag },
   ];
 
