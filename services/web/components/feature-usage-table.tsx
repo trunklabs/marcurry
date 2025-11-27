@@ -44,6 +44,7 @@ export function FeaturesTable({
             <TableHeader>
               <TableRow>
                 <TableHead>Label</TableHead>
+                <TableHead>Product</TableHead>
                 <TableHead>Environment</TableHead>
                 <TableHead>Description</TableHead>
                 <TableHead>Status</TableHead>
@@ -56,6 +57,7 @@ export function FeaturesTable({
                 return (
                   <TableRow key={feature.id} className="hover:bg-muted transition-colors">
                     <TableCell className="font-medium">{feature.label}</TableCell>
+                    <TableCell className="text-muted-foreground">{feature.productId ?? '-'}</TableCell>
                     <TableCell className="text-muted-foreground">{env?.name ?? '-'}</TableCell>
                     <TableCell className="text-muted-foreground">{truncateText(feature.description, 50)}</TableCell>
                     <TableCell>
