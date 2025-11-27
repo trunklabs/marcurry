@@ -7,7 +7,7 @@ import { listFeatureFlags, listProducts, listEnvironments } from '@/lib/apiHandl
 import { Suspense } from 'react';
 import { Badge } from '@/components/ui/badge';
 
-export default async function Home({
+export default async function FeatureFlags({
   searchParams,
 }: {
   searchParams: Promise<{ productId?: string; envId?: string }>;
@@ -26,10 +26,9 @@ export default async function Home({
   const environments = productId ? allEnvironments : [];
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto py-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
           <div className="mt-1 flex items-center gap-2">
             <p className="text-muted-foreground">Overview of your feature flag management</p>
             {products.length > 0 && (

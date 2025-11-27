@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 export function Navigation(props: React.HTMLAttributes<HTMLElement>) {
   const pathname = usePathname();
   const navItems = [
-    { href: '/', label: 'Home', icon: BarChart3 },
+    { href: '/', label: 'Feature Flags', icon: BarChart3 },
     { href: '/products', label: 'Products', icon: Flag },
     // { href: '/features', label: 'Features', icon: Flag },
   ];

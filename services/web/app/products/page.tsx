@@ -23,7 +23,6 @@ export default async function ProductsPage() {
     <div className="container mx-auto py-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Products</h1>
           <p className="text-muted-foreground mt-1">Manage your products</p>
         </div>
         <CreateProductInline />
