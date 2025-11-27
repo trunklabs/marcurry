@@ -1,9 +1,9 @@
 import { notFound } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { EnvironmentsTable, type EnvironmentRow } from '@/components/environments-table';
+import { type EnvironmentRow, EnvironmentsTable } from '@/components/environments-table';
 import { CreateEnvironmentInline } from '@/components/create-environment-inline';
 import { EditProductForm } from '@/components/edit-product-form';
-import Link from 'next/link';
+import { Breadcrumbs } from '@/components/ui/breadcrumbs';
 import { listEnvironments } from '@/lib/apiHandlers/environments';
 import { listFeatureFlags } from '@/lib/apiHandlers/flags';
 import { getProductById } from '@/lib/apiHandlers/products';
@@ -23,6 +23,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
   return (
     <div className="container mx-auto py-8">
+      <Breadcrumbs
+        items={[
+          { label: 'Products', href: '/products', type: 'home' },
+          { label: product.name, type: 'product' },
+        ]}
+      />
+
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Product</h1>
@@ -39,14 +46,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <EditProductForm product={product} />
         </CardContent>
       </Card>
-
-      <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
-        <Link href="/products" className="hover:underline">
-          Products
-        </Link>
-        <span>/</span>
-        <span>{product.name}</span>
-      </div>
 
       <EnvironmentsTable items={rows} />
     </div>

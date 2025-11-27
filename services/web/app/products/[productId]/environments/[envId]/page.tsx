@@ -1,12 +1,12 @@
 import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FeaturesTable } from '@/components/feature-usage-table';
 import { CreateFeatureInline } from '@/components/create-feature-inline';
 import { EditEnvironmentForm } from '@/components/edit-environment-form';
+import { getProductById } from '@/lib/apiHandlers/products';
 import { getEnvironmentById } from '@/lib/apiHandlers/environments';
 import { listFeatureFlags } from '@/lib/apiHandlers/flags';
-import { getProductById } from '@/lib/apiHandlers/products';
+import { Breadcrumbs } from '@/components/ui/breadcrumbs';
 
 export default async function EnvironmentDetailPage({
   params,
@@ -21,17 +21,13 @@ export default async function EnvironmentDetailPage({
 
   return (
     <div className="container mx-auto py-8">
-      <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
-        <Link href="/products" className="hover:underline">
-          Products
-        </Link>
-        <span>/</span>
-        <Link href={`/products/${product.id}`} className="hover:underline">
-          {product.name}
-        </Link>
-        <span>/</span>
-        <span>{environment.name}</span>
-      </div>
+      <Breadcrumbs
+        items={[
+          { label: 'Products', href: '/products', type: 'home' },
+          { label: product.name, href: `/products/${product.id}`, type: 'product' },
+          { label: environment.name, type: 'environment' },
+        ]}
+      />
 
       <div className="mb-6 flex items-center justify-between">
         <div>
