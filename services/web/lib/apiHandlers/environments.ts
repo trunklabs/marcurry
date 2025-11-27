@@ -23,7 +23,6 @@ export async function getEnvironmentById(id: string) {
 export async function updateEnvironmentById(id: string, body: { name?: unknown; description?: unknown } | unknown) {
   const b = (body as { name?: unknown; description?: unknown }) ?? {};
   return adapter.updateEnvironment(id, {
-    name: typeof b.name === 'undefined' ? undefined : String(b.name),
     description: typeof b.description === 'undefined' ? undefined : String(b.description),
   });
 }
