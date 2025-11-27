@@ -21,12 +21,12 @@ function truncateText(text: string | undefined, maxLength: number): string {
 export function FeaturesTable({
   features,
   environments = [],
-  allowDelete = false,
+  allowDelete,
   actions,
 }: {
   features: FeatureFlag[];
   environments?: Environment[];
-  allowDelete?: boolean;
+  allowDelete: boolean;
   actions?: (f: FeatureFlag) => React.ReactNode;
 }) {
   const envMap = new Map(environments.map((e) => [e.id, e]));
@@ -81,7 +81,12 @@ export function FeaturesTable({
                               await deleteFeature(feature.id);
                             }}
                           >
-                            <Button size="sm" variant="ghost" type="submit" className="text-destructive">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              type="submit"
+                              className="text-destructive cursor-pointer no-underline hover:underline"
+                            >
                               <Trash2 className="mr-1 h-4 w-4" />
                               Delete
                             </Button>

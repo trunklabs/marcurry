@@ -6,7 +6,11 @@ import { CreateFeatureInline } from '@/components/create-feature-inline';
 import { getEnvironmentById, getProductById, listFeatureFlags } from '@/lib/apiHandlers';
 import { EditEnvironmentForm } from '@/components/edit-environment-form';
 
-export default async function EnvironmentDetailPage({ params }: { params: Promise<{ productId: string; envId: string }> }) {
+export default async function EnvironmentDetailPage({
+  params,
+}: {
+  params: Promise<{ productId: string; envId: string }>;
+}) {
   const { productId, envId } = await params;
   const [product, environment] = await Promise.all([getProductById(productId), getEnvironmentById(envId)]);
   if (!product || !environment || environment.productId !== product.id) return notFound();
@@ -15,10 +19,14 @@ export default async function EnvironmentDetailPage({ params }: { params: Promis
 
   return (
     <div className="container mx-auto py-8">
-      <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
-        <Link href="/products" className="hover:underline">Products</Link>
+      <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
+        <Link href="/products" className="hover:underline">
+          Products
+        </Link>
         <span>/</span>
-        <Link href={`/products/${product.id}`} className="hover:underline">{product.name}</Link>
+        <Link href={`/products/${product.id}`} className="hover:underline">
+          {product.name}
+        </Link>
         <span>/</span>
         <span>{environment.name}</span>
       </div>
@@ -40,7 +48,7 @@ export default async function EnvironmentDetailPage({ params }: { params: Promis
         </CardContent>
       </Card>
 
-      <FeaturesTable features={features} allowDelete />
+      <FeaturesTable features={features} allowDelete={true} />
     </div>
   );
 }
