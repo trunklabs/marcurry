@@ -11,12 +11,16 @@ import { GatesEditor } from '@/components/gates-editor';
 import { deleteFeature, updateFeature } from '@/app/actions/featureActions';
 import { useToast } from '@/components/ui/toast';
 import type { FeatureFlag } from '@/lib/db/types';
+import { useRouter } from 'next/navigation';
 
 export function EditFeatureForm({ feature }: { feature: FeatureFlag }) {
+  const router = useRouter();
+
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [enabled, setEnabled] = useState(feature.enabled);
   const { showToast } = useToast();
+  const backUrl = `/products/${feature.productId}/environments/${feature.envId}`;
 
   async function handleUpdate(formData: FormData) {
     setSubmitting(true);
@@ -25,6 +29,7 @@ export function EditFeatureForm({ feature }: { feature: FeatureFlag }) {
       showToast('Feature updated successfully');
     } finally {
       setSubmitting(false);
+      router.push(backUrl);
     }
   }
 

@@ -1,15 +1,15 @@
 'use server';
 
 import {
+  createEnvironment,
   createFeatureFlag,
+  createProduct,
   deleteFeatureFlagById,
+  getFeatureFlagById,
   listEnvironments,
   listFeatureFlags,
   listProducts,
-  createProduct,
-  createEnvironment,
   updateFeatureFlagById,
-  getFeatureFlagById,
 } from '@/lib/apiHandlers';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
