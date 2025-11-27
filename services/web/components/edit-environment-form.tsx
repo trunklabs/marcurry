@@ -41,7 +41,7 @@ export function EditEnvironmentForm({ environment }: { environment: Environment 
         <input type="hidden" name="id" value={environment.id} />
         <div className="space-y-2">
           <Label htmlFor="name">Name</Label>
-          <Input id="name" name="name" defaultValue={environment.name} required />
+          <Input id="name" name="name" defaultValue={environment.name} required disabled />
         </div>
         <div className="space-y-2">
           <Label htmlFor="description">Description</Label>

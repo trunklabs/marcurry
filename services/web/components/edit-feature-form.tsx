@@ -45,7 +45,7 @@ export function EditFeatureForm({ feature }: { feature: FeatureFlag }) {
 
         <div className="space-y-2">
           <Label htmlFor="label">Label</Label>
-          <Input id="label" name="label" defaultValue={feature.label} required />
+          <Input id="label" name="label" defaultValue={feature.label} required disabled />
         </div>
 
         <div className="space-y-2">

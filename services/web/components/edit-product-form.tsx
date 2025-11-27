@@ -48,7 +48,7 @@ export function EditProductForm({ product }: { product: Product }) {
         <input type="hidden" name="id" value={product.id} />
         <div className="space-y-2">
           <Label htmlFor="name">Name</Label>
-          <Input id="name" name="name" defaultValue={product.name} required />
+          <Input id="name" name="name" defaultValue={product.name} required disabled />
         </div>
         <div className="space-y-2">
           <Label htmlFor="description">Description</Label>
