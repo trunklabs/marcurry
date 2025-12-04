@@ -82,7 +82,7 @@ export function GatesEditor({ initialGates, valueType, onChange, onValidationCha
         const { actorIds: _actorIds, ...rest } = updated as Gate & { actorIds?: string[] };
         return rest as Gate;
       }
-      return updated;
+      return updated as Gate;
     });
     updateGates(newGates);
   };
@@ -263,7 +263,12 @@ function ActorIdsInput({ actorIds, onChange }: { actorIds: string[]; onChange: (
   );
 }
 
-function renderValueInput(gate: Gate, index: number, valueType: FlagValueType, onChange: (value: FlagValueTypeMap[FlagValueType]) => void) {
+function renderValueInput(
+  gate: Gate,
+  index: number,
+  valueType: FlagValueType,
+  onChange: (value: FlagValueTypeMap[FlagValueType]) => void
+) {
   const id = `gate-${index}-value`;
 
   switch (valueType) {
