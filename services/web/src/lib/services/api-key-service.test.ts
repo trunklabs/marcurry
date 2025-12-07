@@ -4,6 +4,7 @@ import { ProjectNotFoundError } from '@marcurry/core';
 const mockApiKeyRepo = {
   findById: vi.fn(),
   findByProjectId: vi.fn(),
+  findByKeyPrefix: vi.fn(),
   findAll: vi.fn(),
   create: vi.fn(),
   update: vi.fn(),
@@ -25,6 +26,7 @@ vi.mock('@/lib/repositories/api-key-repository', () => ({
   ApiKeyRepository: class {
     findById = mockApiKeyRepo.findById;
     findByProjectId = mockApiKeyRepo.findByProjectId;
+    findByKeyPrefix = mockApiKeyRepo.findByKeyPrefix;
     findAll = mockApiKeyRepo.findAll;
     create = mockApiKeyRepo.create;
     update = mockApiKeyRepo.update;
@@ -270,36 +272,44 @@ describe('ApiKeyService', () => {
         id: 'key-1',
         projectId: 'proj-1',
         name: 'Test Key',
-        secretKeyHash: 'hashed_mc_secret123',
+        keyPrefix: 'abc12345',
+        secretKeyHash: 'hashed_mc_abc12345_secret123',
         allowedEnvironmentIds: ['env-1'],
         createdAt: new Date(),
         lastUsedAt: null,
       };
-      mockApiKeyRepo.findAll.mockResolvedValue([mockKey]);
+      mockApiKeyRepo.findByKeyPrefix.mockResolvedValue(mockKey);
       mockApiKeyRepo.updateLastUsedAt.mockResolvedValue(undefined);
 
-      const result = await service.validateApiKey('mc_secret123');
+      const result = await service.validateApiKey('mc_abc12345_secret123');
 
       expect(result.projectId).toBe('proj-1');
       expect(result.allowedEnvironmentIds).toEqual(['env-1']);
+      expect(mockApiKeyRepo.findByKeyPrefix).toHaveBeenCalledWith('abc12345');
     });
 
-    it('throws InvalidApiKeyError for invalid key', async () => {
-      mockApiKeyRepo.findAll.mockResolvedValue([]);
-
+    it('throws InvalidApiKeyError for invalid key format', async () => {
       await expect(service.validateApiKey('invalid_key')).rejects.toThrow(InvalidApiKeyError);
+      expect(mockApiKeyRepo.findByKeyPrefix).not.toHaveBeenCalled();
     });
 
-    it('throws InvalidApiKeyError when key does not match any hash', async () => {
+    it('throws InvalidApiKeyError when key prefix not found', async () => {
+      mockApiKeyRepo.findByKeyPrefix.mockResolvedValue(null);
+
+      await expect(service.validateApiKey('mc_notfound_secret')).rejects.toThrow(InvalidApiKeyError);
+    });
+
+    it('throws InvalidApiKeyError when key does not match hash', async () => {
       const mockKey = {
         id: 'key-1',
         projectId: 'proj-1',
-        secretKeyHash: 'hashed_mc_different',
+        keyPrefix: 'abc12345',
+        secretKeyHash: 'hashed_mc_abc12345_different',
         allowedEnvironmentIds: [],
       };
-      mockApiKeyRepo.findAll.mockResolvedValue([mockKey]);
+      mockApiKeyRepo.findByKeyPrefix.mockResolvedValue(mockKey);
 
-      await expect(service.validateApiKey('mc_wrong_key')).rejects.toThrow(InvalidApiKeyError);
+      await expect(service.validateApiKey('mc_abc12345_wrong')).rejects.toThrow(InvalidApiKeyError);
     });
   });
 
@@ -308,15 +318,16 @@ describe('ApiKeyService', () => {
       const mockKey = {
         id: 'key-1',
         projectId: 'proj-1',
-        secretKeyHash: 'hashed_mc_secret123',
+        keyPrefix: 'abc12345',
+        secretKeyHash: 'hashed_mc_abc12345_secret123',
         allowedEnvironmentIds: ['env-1'],
       };
       const mockEnv = { id: 'env-1', projectId: 'proj-1', key: 'production' };
-      mockApiKeyRepo.findAll.mockResolvedValue([mockKey]);
+      mockApiKeyRepo.findByKeyPrefix.mockResolvedValue(mockKey);
       mockApiKeyRepo.updateLastUsedAt.mockResolvedValue(undefined);
       mockEnvironmentRepo.findByKey.mockResolvedValue(mockEnv);
 
-      const result = await service.validateApiKeyForEnvironment('mc_secret123', 'production');
+      const result = await service.validateApiKeyForEnvironment('mc_abc12345_secret123', 'production');
 
       expect(result.projectId).toBe('proj-1');
     });
@@ -325,13 +336,14 @@ describe('ApiKeyService', () => {
       const mockKey = {
         id: 'key-1',
         projectId: 'proj-1',
-        secretKeyHash: 'hashed_mc_secret123',
+        keyPrefix: 'abc12345',
+        secretKeyHash: 'hashed_mc_abc12345_secret123',
         allowedEnvironmentIds: [],
       };
-      mockApiKeyRepo.findAll.mockResolvedValue([mockKey]);
+      mockApiKeyRepo.findByKeyPrefix.mockResolvedValue(mockKey);
       mockApiKeyRepo.updateLastUsedAt.mockResolvedValue(undefined);
 
-      await expect(service.validateApiKeyForEnvironment('mc_secret123', 'production')).rejects.toThrow(
+      await expect(service.validateApiKeyForEnvironment('mc_abc12345_secret123', 'production')).rejects.toThrow(
         EnvironmentNotAllowedError
       );
     });
@@ -340,15 +352,16 @@ describe('ApiKeyService', () => {
       const mockKey = {
         id: 'key-1',
         projectId: 'proj-1',
-        secretKeyHash: 'hashed_mc_secret123',
+        keyPrefix: 'abc12345',
+        secretKeyHash: 'hashed_mc_abc12345_secret123',
         allowedEnvironmentIds: ['env-1'],
       };
       const mockEnv = { id: 'env-2', projectId: 'proj-1', key: 'staging' };
-      mockApiKeyRepo.findAll.mockResolvedValue([mockKey]);
+      mockApiKeyRepo.findByKeyPrefix.mockResolvedValue(mockKey);
       mockApiKeyRepo.updateLastUsedAt.mockResolvedValue(undefined);
       mockEnvironmentRepo.findByKey.mockResolvedValue(mockEnv);
 
-      await expect(service.validateApiKeyForEnvironment('mc_secret123', 'staging')).rejects.toThrow(
+      await expect(service.validateApiKeyForEnvironment('mc_abc12345_secret123', 'staging')).rejects.toThrow(
         EnvironmentNotAllowedError
       );
     });
@@ -357,14 +370,15 @@ describe('ApiKeyService', () => {
       const mockKey = {
         id: 'key-1',
         projectId: 'proj-1',
-        secretKeyHash: 'hashed_mc_secret123',
+        keyPrefix: 'abc12345',
+        secretKeyHash: 'hashed_mc_abc12345_secret123',
         allowedEnvironmentIds: ['env-1'],
       };
-      mockApiKeyRepo.findAll.mockResolvedValue([mockKey]);
+      mockApiKeyRepo.findByKeyPrefix.mockResolvedValue(mockKey);
       mockApiKeyRepo.updateLastUsedAt.mockResolvedValue(undefined);
       mockEnvironmentRepo.findByKey.mockResolvedValue(null);
 
-      await expect(service.validateApiKeyForEnvironment('mc_secret123', 'non-existent')).rejects.toThrow(
+      await expect(service.validateApiKeyForEnvironment('mc_abc12345_secret123', 'non-existent')).rejects.toThrow(
         EnvironmentNotAllowedError
       );
     });

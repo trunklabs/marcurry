@@ -75,6 +75,7 @@ export const apiKeys = pgTable(
       .references(() => projects.id, { onDelete: 'cascade' })
       .notNull(),
     name: text('name').notNull(),
+    keyPrefix: text('key_prefix').notNull(),
     secretKeyHash: text('secret_key_hash').notNull(),
     allowedEnvironmentIds: jsonb('allowed_environment_ids').notNull().default('[]'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -82,7 +83,7 @@ export const apiKeys = pgTable(
   },
   (table) => [
     index('api_keys_project_id_idx').on(table.projectId),
-    index('api_keys_secret_key_hash_idx').on(table.secretKeyHash),
+    index('api_keys_key_prefix_idx').on(table.keyPrefix),
   ]
 );
 

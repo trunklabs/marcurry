@@ -44,24 +44,33 @@ export class ApiKeyService {
   }
 
   /**
-   * Generate a secure random API key with prefix for identification
+   * Generate a secure random API key with a prefix for identification.
+   * Format: mc_{keyPrefix}_{randomSecret}
+   * The keyPrefix allows O(1) lookup in the database.
    */
-  private generateSecretKey(): string {
-    const prefix = 'mc_'; // marcurry prefix
+  private generateSecretKey(): { keyPrefix: string; secretKey: string } {
+    const keyPrefix = randomBytes(4).toString('hex');
     const randomPart = randomBytes(32).toString('base64url');
-    return `${prefix}${randomPart}`;
+    const secretKey = `mc_${keyPrefix}_${randomPart}`;
+    return { keyPrefix, secretKey };
   }
 
   /**
-   * Generate a secure random API key with prefix for identification
+   * Extract the key prefix from a secret key.
+   * Format: mc_{keyPrefix}_{randomSecret}
    */
+  private extractKeyPrefix(secretKey: string): string | null {
+    const parts = secretKey.split('_');
+    if (parts.length !== 3 || parts[0] !== 'mc') {
+      return null;
+    }
+    return parts[1];
+  }
+
   private hashSecretKey(secretKey: string): string {
     return bcrypt.hashSync(secretKey, 10);
   }
 
-  /**
-   * Verify that a secret key matches a stored hash
-   */
   private verifySecretKey(secretKey: string, hash: string): boolean {
     return bcrypt.compareSync(secretKey, hash);
   }
@@ -87,12 +96,13 @@ export class ApiKeyService {
       }
     }
 
-    const secretKey = this.generateSecretKey();
+    const { keyPrefix, secretKey } = this.generateSecretKey();
     const secretKeyHash = this.hashSecretKey(secretKey);
 
     const apiKey = await this.apiKeyRepo.create({
       projectId: data.projectId,
       name: data.name,
+      keyPrefix,
       secretKeyHash,
       allowedEnvironmentIds: data.allowedEnvironmentIds,
     });
@@ -161,10 +171,10 @@ export class ApiKeyService {
       throw new ApiKeyNotFoundError(id);
     }
 
-    const secretKey = this.generateSecretKey();
+    const { keyPrefix, secretKey } = this.generateSecretKey();
     const secretKeyHash = this.hashSecretKey(secretKey);
 
-    const updated = await this.apiKeyRepo.update(id, { secretKeyHash });
+    const updated = await this.apiKeyRepo.update(id, { keyPrefix, secretKeyHash });
 
     return {
       ...updated,
@@ -191,19 +201,26 @@ export class ApiKeyService {
     projectId: string;
     allowedEnvironmentIds: string[];
   }> {
-    const allKeys = await this.apiKeyRepo.findAll();
-
-    for (const apiKey of allKeys) {
-      if (this.verifySecretKey(secretKey, apiKey.secretKeyHash)) {
-        this.apiKeyRepo.updateLastUsedAt(apiKey.id).catch(() => {});
-        return {
-          projectId: apiKey.projectId,
-          allowedEnvironmentIds: apiKey.allowedEnvironmentIds,
-        };
-      }
+    const keyPrefix = this.extractKeyPrefix(secretKey);
+    if (!keyPrefix) {
+      throw new InvalidApiKeyError();
     }
 
-    throw new InvalidApiKeyError();
+    const apiKey = await this.apiKeyRepo.findByKeyPrefix(keyPrefix);
+    if (!apiKey) {
+      throw new InvalidApiKeyError();
+    }
+
+    if (!this.verifySecretKey(secretKey, apiKey.secretKeyHash)) {
+      throw new InvalidApiKeyError();
+    }
+
+    await this.apiKeyRepo.updateLastUsedAt(apiKey.id).catch(() => {});
+
+    return {
+      projectId: apiKey.projectId,
+      allowedEnvironmentIds: apiKey.allowedEnvironmentIds,
+    };
   }
 
   /**
