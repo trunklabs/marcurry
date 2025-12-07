@@ -17,6 +17,7 @@ export function evaluateFlag<T extends FlagValueType>(
       flagKey,
       value: config.defaultValue,
       enabled: false,
+      reason: 'flag disabled',
     };
   }
 
@@ -26,6 +27,7 @@ export function evaluateFlag<T extends FlagValueType>(
         flagKey,
         value: gate.value,
         enabled: true,
+        reason: 'gate matched',
         matchedGate: {
           id: gate.id,
           type: gate.type,
@@ -38,5 +40,6 @@ export function evaluateFlag<T extends FlagValueType>(
     flagKey,
     value: config.defaultValue,
     enabled: true,
+    reason: 'default value',
   };
 }
