@@ -14,6 +14,7 @@ export type EvaluationResult<T = boolean | string | number | object> = {
   flagKey: string;
   value: T;
   enabled: boolean;
+  reason: string;
   matchedGate?: {
     id: GateId;
     type: GateType;
