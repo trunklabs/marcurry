@@ -1,57 +1,161 @@
-import { type FeatureFlag } from './../../../services/web/lib/db/types.js';
-import { tryCatch } from './utils.js';
+import type { Actor, EvaluationResult } from '@marcurry/core';
 
+/**
+ * Configuration options for the Marcurry SDK client.
+ */
 export type ClientOptions = {
-  productId: string;
-  envId: string;
+  /** Your API key for authentication */
+  apiKey: string;
+  /** The environment key (e.g., 'production', 'staging') */
+  environmentKey: string;
+  /** Base URL of the Marcurry API (defaults to http://localhost:3000) */
+  baseUrl?: string;
 };
 
+/**
+ * The Marcurry SDK client interface.
+ */
 export type Client = {
-  enabledList(actorId: string): Promise<string[]>;
-  enabled(actorId: string, featureFlagId: string): Promise<boolean>;
+  /**
+   * Evaluates a feature flag for a given actor.
+   * @param flagKey - The key of the flag to evaluate
+   * @param actor - The actor to evaluate the flag for
+   * @returns The evaluation result containing enabled status, value, and reason
+   */
+  evaluateFlag(flagKey: string, actor: Actor): Promise<EvaluationResult>;
+
+  /**
+   * Checks if a feature flag is enabled for a given actor.
+   * @param flagKey - The key of the flag to check
+   * @param actor - The actor to check the flag for
+   * @returns true if the flag is enabled, false otherwise
+   */
+  isEnabled(flagKey: string, actor: Actor): Promise<boolean>;
+
+  /**
+   * Gets the value of a feature flag for a given actor.
+   * @param flagKey - The key of the flag to get the value for
+   * @param actor - The actor to get the flag value for
+   * @param defaultValue - The default value to return if evaluation fails
+   * @returns The flag value or the default value
+   */
+  getValue<T>(flagKey: string, actor: Actor, defaultValue: T): Promise<T>;
 };
 
-const WEB_SERVICE_URL = process.env.WEB_SERVICE_URL || 'http://localhost:3005';
+/**
+ * Error thrown when flag evaluation fails.
+ */
+export class EvaluationError extends Error {
+  public readonly code: string;
+  public readonly statusCode: number;
 
+  constructor(message: string, code: string, statusCode: number) {
+    super(message);
+    this.name = 'EvaluationError';
+    this.code = code;
+    this.statusCode = statusCode;
+  }
+}
+
+const DEFAULT_BASE_URL = 'http://localhost:3000';
+
+/**
+ * Creates a new Marcurry SDK client.
+ *
+ * @param options - Configuration options for the client
+ * @returns A client instance for evaluating feature flags
+ *
+ * @example
+ * ```ts
+ * import { createClient } from '@marcurry/sdk';
+ *
+ * const client = createClient({
+ *   apiKey: 'mc_your-api-key',
+ *   environmentKey: 'production',
+ *   baseUrl: 'https://your-app.example.com',
+ * });
+ *
+ * // Check if a flag is enabled
+ * const enabled = await client.isEnabled('new-feature', { id: 'user-123' });
+ *
+ * // Get the full evaluation result
+ * const result = await client.evaluateFlag('new-feature', { id: 'user-123' });
+ * console.log(result.enabled, result.value, result.reason);
+ *
+ * // Get a typed value with a default
+ * const limit = await client.getValue('rate-limit', { id: 'user-123' }, 100);
+ * ```
+ */
 export function createClient(options: ClientOptions): Client {
-  async function fetchFromWebService(endpoint: string, params: Record<string, string> = {}): Promise<any> {
-    const url = new URL(`${WEB_SERVICE_URL}${endpoint}`);
-    Object.entries(params).forEach(([key, value]) => url.searchParams.append(key, value));
+  const { apiKey, environmentKey, baseUrl = DEFAULT_BASE_URL } = options;
 
-    const response = await fetch(url.toString());
-    if (!response.ok) {
-      throw new Error(`Failed to fetch from ${url}: ${response.statusText}`);
+  if (!apiKey) {
+    throw new Error('apiKey is required');
+  }
+
+  if (!environmentKey) {
+    throw new Error('environmentKey is required');
+  }
+
+  async function evaluateFlag(flagKey: string, actor: Actor): Promise<EvaluationResult> {
+    if (!flagKey) {
+      throw new Error('flagKey is required');
     }
-    return response.json();
+
+    if (!actor || !actor.id) {
+      throw new Error('actor with id is required');
+    }
+
+    const response = await fetch(`${baseUrl}/api/v1/flags/evaluate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': apiKey,
+      },
+      body: JSON.stringify({
+        environmentKey,
+        flagKey,
+        actor,
+      }),
+    });
+
+    const data = (await response.json()) as EvaluationResult | { error?: string; code?: string };
+
+    if (!response.ok) {
+      const errorData = data as { error?: string; code?: string };
+      throw new EvaluationError(
+        errorData.error || 'Flag evaluation failed',
+        errorData.code || 'UNKNOWN_ERROR',
+        response.status
+      );
+    }
+
+    return data as EvaluationResult;
+  }
+
+  async function isEnabled(flagKey: string, actor: Actor): Promise<boolean> {
+    try {
+      const result = await evaluateFlag(flagKey, actor);
+      return result.enabled;
+    } catch {
+      return false;
+    }
+  }
+
+  async function getValue<T>(flagKey: string, actor: Actor, defaultValue: T): Promise<T> {
+    try {
+      const result = await evaluateFlag(flagKey, actor);
+      return result.value as T;
+    } catch {
+      return defaultValue;
+    }
   }
 
   return {
-    async enabledList(actorId: string): Promise<string[]> {
-      const [error, flags] = await tryCatch(
-        fetchFromWebService('/api/flags/enabled', {
-          productId: options.productId,
-          envId: options.envId,
-          actorId,
-        })
-      );
-
-      if (error) return [];
-
-      return flags.map((flag: FeatureFlag) => flag.id);
-    },
-
-    async enabled(actorId: string, featureFlagId: string): Promise<boolean> {
-      const [error, flags] = await tryCatch(
-        fetchFromWebService('/api/flags/enabled', {
-          productId: options.productId,
-          envId: options.envId,
-          actorId,
-        })
-      );
-
-      if (error) return false;
-
-      return Boolean(flags.find((flag: FeatureFlag) => flag.id === featureFlagId));
-    },
+    evaluateFlag,
+    isEnabled,
+    getValue,
   };
 }
+
+export type { Actor, EvaluationResult } from '@marcurry/core';

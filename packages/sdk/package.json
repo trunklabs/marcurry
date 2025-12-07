@@ -13,7 +13,10 @@
     }
   },
   "scripts": {
-    "_disabled_until_fixed_build": "tsup src/index.ts --format cjs,esm --dts --clean"
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean"
+  },
+  "dependencies": {
+    "@marcurry/core": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "20.19.25",

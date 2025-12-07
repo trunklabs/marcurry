@@ -40,6 +40,10 @@ importers:
         version: 5.9.3
 
   packages/sdk:
+    dependencies:
+      '@marcurry/core':
+        specifier: workspace:*
+        version: link:../../domains/core
     devDependencies:
       '@types/node':
         specifier: 20.19.25
