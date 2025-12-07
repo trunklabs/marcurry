@@ -67,12 +67,33 @@ export const flagEnvironmentConfigs = pgTable(
   ]
 );
 
+export const apiKeys = pgTable(
+  'api_keys',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    projectId: uuid('project_id')
+      .references(() => projects.id, { onDelete: 'cascade' })
+      .notNull(),
+    name: text('name').notNull(),
+    secretKeyHash: text('secret_key_hash').notNull(),
+    allowedEnvironmentIds: jsonb('allowed_environment_ids').notNull().default('[]'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    lastUsedAt: timestamp('last_used_at'),
+  },
+  (table) => [
+    index('api_keys_project_id_idx').on(table.projectId),
+    index('api_keys_secret_key_hash_idx').on(table.secretKeyHash),
+  ]
+);
+
 export type ProjectRow = typeof projects.$inferSelect;
 export type EnvironmentRow = typeof environments.$inferSelect;
 export type FlagRow = typeof flags.$inferSelect;
 export type FlagEnvironmentConfigRow = typeof flagEnvironmentConfigs.$inferSelect;
+export type ApiKeyRow = typeof apiKeys.$inferSelect;
 
 export type InsertProject = typeof projects.$inferInsert;
 export type InsertEnvironment = typeof environments.$inferInsert;
 export type InsertFlag = typeof flags.$inferInsert;
 export type InsertFlagEnvironmentConfig = typeof flagEnvironmentConfigs.$inferInsert;
+export type InsertApiKey = typeof apiKeys.$inferInsert;
