@@ -28,3 +28,17 @@ export class FlagEnvironmentConfigNotFoundError extends Error {
     this.name = 'FlagEnvironmentConfigNotFoundError';
   }
 }
+
+export class ProjectMustHaveEnvironmentError extends Error {
+  constructor() {
+    super('Project must have at least one environment');
+    this.name = 'ProjectMustHaveEnvironmentError';
+  }
+}
+
+export class CannotDeleteLastEnvironmentError extends Error {
+  constructor(public readonly projectId: string) {
+    super(`Cannot delete the last environment in project ${projectId}`);
+    this.name = 'CannotDeleteLastEnvironmentError';
+  }
+}

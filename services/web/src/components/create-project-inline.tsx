@@ -15,7 +15,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Plus, X, Sparkles } from 'lucide-react';
 import { createProjectAction } from '@/app/actions/projects';
-import { createEnvironmentAction } from '@/app/actions/environments';
 import { useToast } from '@/components/ui/toast';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { slugify } from '@/lib/utils';
@@ -89,10 +88,7 @@ export function CreateProjectInline() {
         return;
       }
 
-      const project = await createProjectAction({ name });
-      for (const env of envs) {
-        await createEnvironmentAction({ projectId: project.id, name: env.name, key: env.key });
-      }
+      await createProjectAction({ name, environments: envs });
       setOpen(false);
       showToast('Project created successfully');
       setEnvRows([{ id: crypto.randomUUID(), name: '', key: '' }]);

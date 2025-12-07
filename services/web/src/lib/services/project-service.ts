@@ -1,12 +1,20 @@
 import { ProjectRepository } from '@/lib/repositories/project-repository';
-import { ProjectNotFoundError } from '@marcurry/core';
+import { EnvironmentRepository } from '@/lib/repositories/environment-repository';
+import {
+  ProjectNotFoundError,
+  ProjectMustHaveEnvironmentError,
+  validateProject,
+  validateEnvironment,
+} from '@marcurry/core';
 import type { Project, ProjectId } from '@marcurry/core';
 
 export class ProjectService {
   private projectRepo: ProjectRepository;
+  private environmentRepo: EnvironmentRepository;
 
   constructor() {
     this.projectRepo = new ProjectRepository();
+    this.environmentRepo = new EnvironmentRepository();
   }
 
   async getProject(id: ProjectId): Promise<Project> {
@@ -21,8 +29,28 @@ export class ProjectService {
     return this.projectRepo.findAll();
   }
 
-  async createProject(data: { name: string }): Promise<Project> {
-    return this.projectRepo.create(data);
+  async createProject(data: { name: string; environments: Array<{ name: string; key: string }> }): Promise<Project> {
+    if (!data.environments || data.environments.length === 0) {
+      throw new ProjectMustHaveEnvironmentError();
+    }
+
+    validateProject({ name: data.name });
+
+    for (const env of data.environments) {
+      validateEnvironment(env);
+    }
+
+    const project = await this.projectRepo.create({ name: data.name });
+
+    for (const env of data.environments) {
+      await this.environmentRepo.create({
+        projectId: project.id,
+        name: env.name,
+        key: env.key,
+      });
+    }
+
+    return project;
   }
 
   async updateProject(id: ProjectId, data: { name?: string }): Promise<Project> {
