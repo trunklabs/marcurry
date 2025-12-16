@@ -42,7 +42,7 @@
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "drizzle-kit": "0.31.7",
-    "eslint": "9.39.1",
+    "eslint": "9.39.2",
     "eslint-config-next": "16.0.2",
     "tailwindcss": "4.1.17",
     "tsx": "4.20.6",
