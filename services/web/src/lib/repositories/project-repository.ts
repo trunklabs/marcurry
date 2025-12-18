@@ -1,5 +1,5 @@
-import { eq } from 'drizzle-orm';
-import { db, projects, type ProjectRow, type Transaction } from '@/db';
+import { eq, desc } from 'drizzle-orm';
+import { db, projects, projectOwners, type ProjectRow, type Transaction } from '@/db';
 import type { Project, ProjectId } from '@marcurry/core';
 
 export class ProjectRepository {
@@ -15,6 +15,28 @@ export class ProjectRepository {
     const results = await db.query.projects.findMany({
       orderBy: (projects, { desc }) => [desc(projects.createdAt)],
     });
+
+    return results.map(this.toDomain);
+  }
+
+  /**
+   * Find all projects belonging to a specific owner (organization or user).
+   */
+  async findByOwner(ownerId: string, ownerType: 'organization' | 'user'): Promise<Project[]> {
+    const whereClause =
+      ownerType === 'organization' ? eq(projectOwners.organizationId, ownerId) : eq(projectOwners.userId, ownerId);
+
+    const results = await db
+      .select({
+        id: projects.id,
+        name: projects.name,
+        createdAt: projects.createdAt,
+        updatedAt: projects.updatedAt,
+      })
+      .from(projects)
+      .innerJoin(projectOwners, eq(projects.id, projectOwners.projectId))
+      .where(whereClause)
+      .orderBy(desc(projects.createdAt));
 
     return results.map(this.toDomain);
   }

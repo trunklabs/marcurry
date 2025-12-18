@@ -2,9 +2,10 @@ import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
-import { Navigation } from '@/components/navigation';
 import { ToastProvider } from '@/ui/toast';
+import { Toaster } from '@/ui/sonner';
 import { ThemeProvider } from '@/components/theme-provider';
+import { ClientProviders } from '@/components/client-providers';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -33,10 +34,8 @@ export default function RootLayout({
       >
         <ToastProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-            <div className="container w-full max-w-7xl">
-              <Navigation />
-              <main className="px-4">{children}</main>
-            </div>
+            <ClientProviders>{children}</ClientProviders>
+            <Toaster />
           </ThemeProvider>
         </ToastProvider>
       </body>

@@ -117,7 +117,7 @@ describe('validateGates', () => {
       ];
       expect(() => validateGates(gates)).toThrow(GateValidationError);
       expect(() => validateGates(gates)).toThrow(
-        'Boolean gate should be the last gate (all subsequent gates will be unreachable)'
+        'Boolean gates must be positioned last because they match all users and make subsequent gates unreachable'
       );
     });
 
@@ -145,7 +145,7 @@ describe('validateGates', () => {
         },
       ];
       expect(() => validateGates(gates)).toThrow(
-        'Boolean gate should be the last gate (all subsequent gates will be unreachable)'
+        'Boolean gates must be positioned last because they match all users and make subsequent gates unreachable'
       );
     });
 

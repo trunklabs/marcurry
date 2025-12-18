@@ -14,13 +14,23 @@ import {
 import { Input } from '@/ui/input';
 import { Label } from '@/ui/label';
 import { Plus, X, Sparkles } from 'lucide-react';
-import { createProjectAction } from '@/app/actions/projects';
+import { createProjectAction } from '@/server/projects';
 import { useToast } from '@/ui/toast';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { slugify } from '@/lib/utils';
 
-export function CreateProjectInline() {
-  const [open, setOpen] = useState(false);
+interface CreateProjectInlineProps {
+  trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function CreateProjectInline({ trigger, open: controlledOpen, onOpenChange }: CreateProjectInlineProps = {}) {
+  const [internalOpen, setInternalOpen] = useState(false);
+
+  // Use controlled state if provided, otherwise use internal state
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setOpen = onOpenChange || setInternalOpen;
   const [submitting, setSubmitting] = useState(false);
   const { showToast } = useToast();
   const [envRows, setEnvRows] = useState<Array<{ id: string; name: string; key: string }>>([
@@ -99,12 +109,16 @@ export function CreateProjectInline() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="sm">
-          <Plus className="mr-1 h-4 w-4" />
-          New Project
-        </Button>
-      </DialogTrigger>
+      {(trigger || controlledOpen === undefined) && (
+        <DialogTrigger asChild>
+          {trigger || (
+            <Button size="sm">
+              <Plus className="mr-1 h-4 w-4" />
+              New Project
+            </Button>
+          )}
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-2xl">
         <form action={handleCreate} className="space-y-4">
           <DialogHeader>

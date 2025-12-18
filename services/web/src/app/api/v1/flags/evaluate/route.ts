@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { FlagService } from '@/lib/services/flag-service';
-import { ApiKeyService } from '@/lib/services/api-key-service';
+import { auth } from '@/lib/auth';
 import type { Actor, EvaluationResult } from '@marcurry/core';
 
 export type EvaluateFlagRequest = {
@@ -14,6 +14,19 @@ export type EvaluateFlagResponse = EvaluationResult;
 export type EvaluateFlagErrorResponse = {
   error: string;
   code: string;
+};
+
+/**
+ * API Key metadata structure for flag evaluation.
+ * When creating API keys for SDK access, include this metadata:
+ * - organizationId: The organization the key belongs to
+ * - projectId: The project the key can access
+ * - allowedEnvironments: Array of environment keys the key can access (optional, empty = all)
+ */
+type ApiKeyMetadata = {
+  organizationId?: string;
+  projectId?: string;
+  allowedEnvironments?: string[];
 };
 
 /**
@@ -65,21 +78,48 @@ export async function POST(
       return NextResponse.json({ error: 'actor with id is required', code: 'MISSING_ACTOR' }, { status: 400 });
     }
 
-    const apiKeyService = new ApiKeyService();
-    const { projectId } = await apiKeyService.validateApiKeyForEnvironment(apiKey, body.environmentKey);
+    // Verify API key using better-auth
+    const verifyResult = await auth.api.verifyApiKey({
+      body: { key: apiKey },
+    });
+
+    if (!verifyResult.valid || !verifyResult.key) {
+      return NextResponse.json(
+        { error: verifyResult.error?.message || 'Invalid API key', code: 'INVALID_API_KEY' },
+        { status: 401 }
+      );
+    }
+
+    // Get metadata for projectId and allowed environments
+    // better-auth stores metadata as an object, not a JSON string
+    const metadata: ApiKeyMetadata = (verifyResult.key.metadata as ApiKeyMetadata) || {};
+
+    if (!metadata.projectId) {
+      return NextResponse.json(
+        { error: 'API key is not configured for project access', code: 'INVALID_API_KEY_CONFIG' },
+        { status: 403 }
+      );
+    }
+
+    // Check if environment is allowed (if restrictions are set)
+    if (metadata.allowedEnvironments && metadata.allowedEnvironments.length > 0) {
+      if (!metadata.allowedEnvironments.includes(body.environmentKey)) {
+        return NextResponse.json(
+          {
+            error: `API key is not allowed to access environment: ${body.environmentKey}`,
+            code: 'ENVIRONMENT_NOT_ALLOWED',
+          },
+          { status: 403 }
+        );
+      }
+    }
 
     const flagService = new FlagService();
-    const result = await flagService.evaluateFlag(projectId, body.environmentKey, body.flagKey, body.actor);
+    const result = await flagService.evaluateFlag(metadata.projectId, body.environmentKey, body.flagKey, body.actor);
 
     return NextResponse.json(result);
   } catch (error) {
     if (error instanceof Error) {
-      if (error.name === 'InvalidApiKeyError') {
-        return NextResponse.json({ error: error.message, code: 'INVALID_API_KEY' }, { status: 401 });
-      }
-      if (error.name === 'EnvironmentNotAllowedError') {
-        return NextResponse.json({ error: error.message, code: 'ENVIRONMENT_NOT_ALLOWED' }, { status: 403 });
-      }
       if (error.name === 'FlagNotFoundError') {
         return NextResponse.json({ error: error.message, code: 'FLAG_NOT_FOUND' }, { status: 404 });
       }

@@ -4,7 +4,7 @@ import { Button } from '@/ui/button';
 import { Pencil, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import type { Project } from '@marcurry/core';
-import { deleteProjectAction } from '@/app/actions/projects';
+import { deleteProjectAction } from '@/server/projects';
 
 export interface ProductRow {
   product: Project;

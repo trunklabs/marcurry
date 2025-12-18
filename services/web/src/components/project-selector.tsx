@@ -16,8 +16,8 @@ export function ProjectSelector({
   const currentProjectId = searchParams.get('projectId') || '';
 
   const handleChange = (projectId: string) => {
-    const environmentsUrl = '/environments';
-    const rootUrl = '/';
+    const environmentsUrl = '/app/environments';
+    const rootUrl = '/app';
     const urlToUse = isEnvironmentPage ? environmentsUrl : rootUrl;
 
     if (projectId === 'all') {

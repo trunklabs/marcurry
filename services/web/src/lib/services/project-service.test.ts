@@ -34,11 +34,22 @@ vi.mock('@/lib/repositories/environment-repository', () => ({
   },
 }));
 
+const mockTx = {
+  insert: vi.fn().mockReturnValue({
+    values: vi.fn().mockResolvedValue(undefined),
+  }),
+};
+
 vi.mock('@/db', () => ({
   db: {
-    transaction: vi.fn((callback) => callback({})),
+    transaction: vi.fn((callback) => callback(mockTx)),
   },
+  projectOwners: {},
 }));
+
+// Test constants for owner context
+const TEST_ORG_ID = 'org-test-123';
+const TEST_USER_ID = 'user-test-456';
 
 describe('ProjectService', () => {
   let service: InstanceType<typeof import('./project-service').ProjectService>;
@@ -104,11 +115,15 @@ describe('ProjectService', () => {
           { name: 'Production', key: 'production' },
           { name: 'Staging', key: 'staging' },
         ],
+        ownerId: TEST_ORG_ID,
+        ownerType: 'organization',
+        createdBy: TEST_USER_ID,
       });
 
       expect(result).toEqual(mockProject);
       expect(mockProjectRepo.create).toHaveBeenCalledWith({ name: 'Test Project' }, expect.anything());
       expect(mockEnvironmentRepo.create).toHaveBeenCalledTimes(2);
+      expect(mockTx.insert).toHaveBeenCalled();
     });
 
     it('throws ProjectMustHaveEnvironmentError when environments array is empty', async () => {
@@ -116,6 +131,9 @@ describe('ProjectService', () => {
         service.createProject({
           name: 'Test Project',
           environments: [],
+          ownerId: TEST_ORG_ID,
+          ownerType: 'organization',
+          createdBy: TEST_USER_ID,
         })
       ).rejects.toThrow(ProjectMustHaveEnvironmentError);
 
@@ -128,6 +146,9 @@ describe('ProjectService', () => {
           name: 'Test Project',
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           environments: undefined as any,
+          ownerId: TEST_ORG_ID,
+          ownerType: 'organization',
+          createdBy: TEST_USER_ID,
         })
       ).rejects.toThrow(ProjectMustHaveEnvironmentError);
     });
@@ -137,6 +158,9 @@ describe('ProjectService', () => {
         service.createProject({
           name: '',
           environments: [{ name: 'Production', key: 'production' }],
+          ownerId: TEST_ORG_ID,
+          ownerType: 'organization',
+          createdBy: TEST_USER_ID,
         })
       ).rejects.toThrow(ProjectValidationError);
     });
@@ -146,6 +170,9 @@ describe('ProjectService', () => {
         service.createProject({
           name: 'a'.repeat(201),
           environments: [{ name: 'Production', key: 'production' }],
+          ownerId: TEST_ORG_ID,
+          ownerType: 'organization',
+          createdBy: TEST_USER_ID,
         })
       ).rejects.toThrow(ProjectValidationError);
     });
@@ -155,6 +182,9 @@ describe('ProjectService', () => {
         service.createProject({
           name: 'Test Project',
           environments: [{ name: 'Production', key: 'INVALID-KEY' }],
+          ownerId: TEST_ORG_ID,
+          ownerType: 'organization',
+          createdBy: TEST_USER_ID,
         })
       ).rejects.toThrow(EnvironmentValidationError);
     });
@@ -164,6 +194,9 @@ describe('ProjectService', () => {
         service.createProject({
           name: 'Test Project',
           environments: [{ name: '', key: 'production' }],
+          ownerId: TEST_ORG_ID,
+          ownerType: 'organization',
+          createdBy: TEST_USER_ID,
         })
       ).rejects.toThrow(EnvironmentValidationError);
     });
@@ -176,6 +209,9 @@ describe('ProjectService', () => {
             { name: 'Production', key: 'production' },
             { name: '', key: 'staging' },
           ],
+          ownerId: TEST_ORG_ID,
+          ownerType: 'organization',
+          createdBy: TEST_USER_ID,
         })
       ).rejects.toThrow(EnvironmentValidationError);
 

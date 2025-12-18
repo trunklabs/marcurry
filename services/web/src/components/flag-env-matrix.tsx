@@ -8,7 +8,7 @@ import { Button } from '@/ui/button';
 import { Switch } from '@/ui/switch';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/ui/dialog';
 import { GatesEditor } from '@/components/gates-editor';
-import { createFlagConfigAction, updateFlagConfigAction } from '@/app/actions/flags';
+import { createFlagConfigAction, updateFlagConfigAction } from '@/server/flags';
 import type { Environment, Flag, FlagEnvironmentConfig, Gate, FlagValueType, FlagValueTypeMap } from '@marcurry/core';
 
 type Props = {

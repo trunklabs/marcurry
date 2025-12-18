@@ -18,7 +18,7 @@ import { useToast } from '@/ui/toast';
 import { useRouter } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui/select';
 import type { Project, FlagValueType, FlagValueTypeMap } from '@marcurry/core';
-import { createFlagAction } from '@/app/actions/flags';
+import { createFlagAction } from '@/server/flags';
 import { slugify } from '@/lib/utils';
 
 export function CreateFlagInline(props: { projectId?: string; envId?: string; products?: Project[] }) {
@@ -110,7 +110,7 @@ export function CreateFlagInline(props: { projectId?: string; envId?: string; pr
       });
       setOpen(false);
       showToast('Flag created successfully');
-      if (pid) router.push(`/?projectId=${pid}`);
+      if (pid) router.push(`/app?projectId=${pid}`);
     } finally {
       setSubmitting(false);
     }

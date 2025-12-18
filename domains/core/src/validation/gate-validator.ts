@@ -22,7 +22,9 @@ export function validateGates<T>(gates: Gate<T>[]): void {
   const booleanGateIndex = gates.findIndex((gate) => gate.type === 'boolean');
 
   if (booleanGateIndex !== -1 && booleanGateIndex !== gates.length - 1) {
-    throw new GateValidationError('Boolean gate should be the last gate (all subsequent gates will be unreachable)');
+    throw new GateValidationError(
+      'Boolean gates must be positioned last because they match all users and make subsequent gates unreachable'
+    );
   }
 
   for (const gate of gates) {
