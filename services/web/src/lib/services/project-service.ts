@@ -84,6 +84,7 @@ export class ProjectService {
    */
   async createProject(data: {
     name: string;
+    key: string;
     environments: Array<{ name: string; key: string }>;
     ownerId: string;
     ownerType: 'organization' | 'user';
@@ -93,28 +94,29 @@ export class ProjectService {
       throw new ProjectMustHaveEnvironmentError();
     }
 
-    validateProject({ name: data.name });
+    validateProject({ name: data.name, key: data.key });
 
     for (const env of data.environments) {
       validateEnvironment(env);
     }
 
     return db.transaction(async (tx) => {
-      const project = await this.projectRepo.create({ name: data.name }, tx);
+      const project = await this.projectRepo.create({ name: data.name, key: data.key }, tx);
 
-      // Create project ownership relation
       const ownershipData =
         data.ownerType === 'organization'
           ? {
               organizationId: data.ownerId,
               userId: null,
               projectId: project.id,
+              key: data.key,
               createdBy: data.createdBy,
             }
           : {
               organizationId: null,
               userId: data.ownerId,
               projectId: project.id,
+              key: data.key,
               createdBy: data.createdBy,
             };
 

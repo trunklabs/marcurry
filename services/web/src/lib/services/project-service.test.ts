@@ -111,6 +111,7 @@ describe('ProjectService', () => {
 
       const result = await service.createProject({
         name: 'Test Project',
+        key: 'test-project',
         environments: [
           { name: 'Production', key: 'production' },
           { name: 'Staging', key: 'staging' },
@@ -121,7 +122,10 @@ describe('ProjectService', () => {
       });
 
       expect(result).toEqual(mockProject);
-      expect(mockProjectRepo.create).toHaveBeenCalledWith({ name: 'Test Project' }, expect.anything());
+      expect(mockProjectRepo.create).toHaveBeenCalledWith(
+        { name: 'Test Project', key: 'test-project' },
+        expect.anything()
+      );
       expect(mockEnvironmentRepo.create).toHaveBeenCalledTimes(2);
       expect(mockTx.insert).toHaveBeenCalled();
     });
@@ -130,6 +134,7 @@ describe('ProjectService', () => {
       await expect(
         service.createProject({
           name: 'Test Project',
+          key: 'test-project',
           environments: [],
           ownerId: TEST_ORG_ID,
           ownerType: 'organization',
@@ -144,6 +149,7 @@ describe('ProjectService', () => {
       await expect(
         service.createProject({
           name: 'Test Project',
+          key: 'test-project',
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           environments: undefined as any,
           ownerId: TEST_ORG_ID,
@@ -157,6 +163,7 @@ describe('ProjectService', () => {
       await expect(
         service.createProject({
           name: '',
+          key: 'test-project',
           environments: [{ name: 'Production', key: 'production' }],
           ownerId: TEST_ORG_ID,
           ownerType: 'organization',
@@ -169,6 +176,7 @@ describe('ProjectService', () => {
       await expect(
         service.createProject({
           name: 'a'.repeat(201),
+          key: 'test-project',
           environments: [{ name: 'Production', key: 'production' }],
           ownerId: TEST_ORG_ID,
           ownerType: 'organization',
@@ -181,6 +189,7 @@ describe('ProjectService', () => {
       await expect(
         service.createProject({
           name: 'Test Project',
+          key: 'test-project',
           environments: [{ name: 'Production', key: 'INVALID-KEY' }],
           ownerId: TEST_ORG_ID,
           ownerType: 'organization',
@@ -193,6 +202,7 @@ describe('ProjectService', () => {
       await expect(
         service.createProject({
           name: 'Test Project',
+          key: 'test-project',
           environments: [{ name: '', key: 'production' }],
           ownerId: TEST_ORG_ID,
           ownerType: 'organization',
@@ -205,6 +215,7 @@ describe('ProjectService', () => {
       await expect(
         service.createProject({
           name: 'Test Project',
+          key: 'test-project',
           environments: [
             { name: 'Production', key: 'production' },
             { name: '', key: 'staging' },

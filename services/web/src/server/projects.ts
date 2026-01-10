@@ -19,6 +19,7 @@ export async function getProjectAction(id: string): Promise<Project> {
 
 export async function createProjectAction(data: {
   name: string;
+  key: string;
   environments: Array<{ name: string; key: string }>;
 }): Promise<Project> {
   const ctx = await getSessionContext();

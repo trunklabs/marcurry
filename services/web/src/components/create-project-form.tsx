@@ -21,10 +21,18 @@ export function CreateProjectForm() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [projectName, setProjectName] = useState('');
+  const [projectKey, setProjectKey] = useState('');
   const [environments, setEnvironments] = useState<Environment[]>([
     { id: crypto.randomUUID(), name: 'Production', key: 'production' },
     { id: crypto.randomUUID(), name: 'Staging', key: 'staging' },
   ]);
+
+  const handleProjectNameChange = (value: string) => {
+    setProjectName(value);
+    if (projectKey === '' || projectKey === slugify(projectName)) {
+      setProjectKey(slugify(value));
+    }
+  };
 
   const updateEnvironment = (id: string, field: 'name' | 'key', value: string) => {
     setEnvironments((envs) =>
@@ -60,6 +68,12 @@ export function CreateProjectForm() {
         return;
       }
 
+      const key = projectKey.trim();
+      if (!key) {
+        toast.error('Project key is required');
+        return;
+      }
+
       const envs = environments.map((e) => ({ name: e.name.trim(), key: e.key.trim() })).filter((e) => e.name);
       if (envs.length === 0) {
         toast.error('At least one environment is required');
@@ -83,7 +97,7 @@ export function CreateProjectForm() {
         return;
       }
 
-      const project = await createProjectAction({ name, environments: envs });
+      const project = await createProjectAction({ name, key, environments: envs });
       toast.success('Project created successfully');
       router.push(`/app/projects/${project.id}`);
     } catch (error) {
@@ -98,16 +112,29 @@ export function CreateProjectForm() {
     <Card>
       <CardContent className="pt-6">
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Project Name */}
-          <div className="space-y-2">
-            <Label htmlFor="name">Project Name *</Label>
-            <Input
-              id="name"
-              value={projectName}
-              onChange={(e) => setProjectName(e.target.value)}
-              placeholder="My Awesome Project"
-              required
-            />
+          {/* Project Name and Key */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Project Name *</Label>
+              <Input
+                id="name"
+                value={projectName}
+                onChange={(e) => handleProjectNameChange(e.target.value)}
+                placeholder="My Awesome Project"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="key">Project Key *</Label>
+              <Input
+                id="key"
+                value={projectKey}
+                onChange={(e) => setProjectKey(e.target.value)}
+                placeholder="my-awesome-project"
+                required
+              />
+              <p className="text-muted-foreground text-xs">Used in the SDK to identify this project</p>
+            </div>
           </div>
 
           {/* Environments */}

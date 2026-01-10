@@ -12,6 +12,17 @@ import {
   integer,
 } from 'drizzle-orm/pg-core';
 
+/**
+ * =============================================================================
+ * DOMAIN TABLES
+ * =============================================================================
+ * Core application tables for feature flag management.
+ * These tables are auth-agnostic and contain the business logic data.
+ *
+ * Note: `projectOwners`
+ * =============================================================================
+ */
+
 export const projects = pgTable('projects', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: text('name').notNull(),
@@ -80,9 +91,9 @@ export const flagEnvironmentConfigs = pgTable(
 );
 
 /**
- * Project ownership table.
- * Links projects to either organizations OR users (personal accounts).
- * A project belongs to exactly one owner (organization or user).
+ * This table bridges domain and auth layers by linking projects to
+ * their owners (organizations or users). It is considered part of the domain
+ * because it enforces business rules like per-owner project key uniqueness.
  */
 export const projectOwners = pgTable(
   'project_owners',
@@ -93,11 +104,14 @@ export const projectOwners = pgTable(
     projectId: uuid('project_id')
       .references(() => projects.id, { onDelete: 'cascade' })
       .notNull(),
+    key: text('key').notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     createdBy: text('created_by').references(() => user.id, { onDelete: 'set null' }),
   },
   (table) => [
     uniqueIndex('project_owners_project_id_uidx').on(table.projectId),
+    uniqueIndex('project_owners_org_key_uidx').on(table.organizationId, table.key),
+    uniqueIndex('project_owners_user_key_uidx').on(table.userId, table.key),
     index('project_owners_organization_id_idx').on(table.organizationId),
     index('project_owners_user_id_idx').on(table.userId),
   ]
@@ -115,7 +129,18 @@ export type InsertFlag = typeof flags.$inferInsert;
 export type InsertFlagEnvironmentConfig = typeof flagEnvironmentConfigs.$inferInsert;
 export type InsertProjectOwner = typeof projectOwners.$inferInsert;
 
-/** Better Auth */
+/**
+ * =============================================================================
+ * AUTH TABLES (Better Auth)
+ * =============================================================================
+ * Authentication and authorization tables managed by Better Auth.
+ * Do not modify these table structures directly - they are controlled by
+ * the Better Auth library and its plugins.
+ *
+ * The `authSchema` export at the end of this file defines which tables
+ * Better Auth uses for its drizzle adapter.
+ * =============================================================================
+ */
 
 export const user = pgTable('user', {
   id: text('id').primaryKey(),

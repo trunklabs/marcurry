@@ -1,4 +1,5 @@
 import type { Project } from '../types/entities.js';
+import { validateKey } from './key-validator.js';
 
 export class ProjectValidationError extends Error {
   constructor(message: string) {
@@ -14,6 +15,8 @@ const MAX_PROJECT_NAME_LENGTH = 200;
  * Throws ProjectValidationError if validation fails.
  */
 export function validateProject(project: Partial<Project>): void {
+  validateKey(project.key as string | undefined, 'Project', ProjectValidationError);
+
   if (!project.name || project.name.trim().length === 0) {
     throw new ProjectValidationError('Project name is required');
   }
