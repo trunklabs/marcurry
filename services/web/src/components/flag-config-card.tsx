@@ -8,6 +8,7 @@ import { Switch } from '@/ui/switch';
 import { Label } from '@/ui/label';
 import { createFlagConfigAction, updateFlagConfigAction } from '@/server/flags';
 import { toast } from 'sonner';
+import { parseErrorMessage } from '@/lib/utils';
 import type { Flag, Environment, FlagEnvironmentConfig } from '@marcurry/core';
 
 interface FlagConfigCardProps {
@@ -26,10 +27,8 @@ export function FlagConfigCard({ flag, environment, config, projectId }: FlagCon
     setUpdating(true);
     try {
       if (config) {
-        // Update existing config
         await updateFlagConfigAction(config.id, projectId, flag.id, { enabled: checked });
       } else {
-        // Create new config
         await createFlagConfigAction({
           flagId: flag.id,
           environmentId: environment.id,
@@ -42,7 +41,7 @@ export function FlagConfigCard({ flag, environment, config, projectId }: FlagCon
       toast.success(`Flag ${checked ? 'enabled' : 'disabled'} in ${environment.name}`);
       router.refresh();
     } catch (error) {
-      toast.error('Failed to update flag configuration');
+      toast.error(parseErrorMessage(error, 'Failed to update flag configuration'));
       console.error(error);
     } finally {
       setUpdating(false);

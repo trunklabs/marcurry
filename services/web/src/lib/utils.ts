@@ -22,3 +22,65 @@ export function slugify(input: string): string {
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-');
 }
+
+/**
+ * Parses database and validation errors into user-friendly messages.
+ */
+export function parseErrorMessage(error: unknown, fallbackMessage: string): string {
+  if (!error) return fallbackMessage;
+
+  if (error instanceof Error) {
+    const message = error.message;
+
+    if (message.includes('Failed query:') || message.includes('SQL') || message.includes('params:')) {
+      if (message.includes('flags')) {
+        return 'A flag with this key already exists in this project';
+      }
+      if (message.includes('environments')) {
+        return 'An environment with this key already exists in this project';
+      }
+      if (message.includes('projects') || message.includes('project_owners')) {
+        return 'A project with this key already exists';
+      }
+      return 'This record already exists';
+    }
+
+    if (message.includes('duplicate key') || message.includes('unique constraint') || message.includes('violates')) {
+      if (message.includes('flags_project_key_unique') || message.includes('"flags"')) {
+        return 'A flag with this key already exists in this project';
+      }
+      if (message.includes('environments_project_key_unique') || message.includes('"environments"')) {
+        return 'An environment with this key already exists in this project';
+      }
+      if (
+        message.includes('project_owners_org_key_uidx') ||
+        message.includes('project_owners_user_key_uidx') ||
+        message.includes('"projects"')
+      ) {
+        return 'A project with this key already exists';
+      }
+      return 'This record already exists';
+    }
+
+    if (
+      message.includes('FlagValidationError') ||
+      message.includes('ProjectValidationError') ||
+      message.includes('EnvironmentValidationError')
+    ) {
+      return message.replace(/^(Flag|Project|Environment)ValidationError:\s*/, '');
+    }
+
+    if (
+      message.includes('query') ||
+      message.includes('Query') ||
+      message.includes('database') ||
+      message.includes('Database')
+    ) {
+      return fallbackMessage;
+    }
+
+    return message;
+  }
+
+  return fallbackMessage;
+}

@@ -17,7 +17,7 @@ import { Input } from '@/ui/input';
 import { Plus, X, Sparkles, PlusCircle, Trash2 } from 'lucide-react';
 import { createProjectAction } from '@/server/projects';
 import { useToast } from '@/ui/toast';
-import { slugify } from '@/lib/utils';
+import { slugify, parseErrorMessage } from '@/lib/utils';
 import { createProjectSchema, type CreateProjectInput } from '@/schemas/project-schemas';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/ui/form';
 
@@ -36,6 +36,7 @@ export function CreateProjectInline({ trigger, open: controlledOpen, onOpenChang
 
   const form = useForm<CreateProjectInput>({
     resolver: zodResolver(createProjectSchema),
+    mode: 'onTouched',
     defaultValues: {
       name: '',
       key: '',
@@ -74,7 +75,7 @@ export function CreateProjectInline({ trigger, open: controlledOpen, onOpenChang
       showToast('Project created successfully');
       form.reset();
     } catch (error) {
-      showToast('Failed to create project', 'error');
+      showToast(parseErrorMessage(error, 'Failed to create project'), 'error');
       console.error(error);
     }
   }
@@ -148,6 +149,11 @@ export function CreateProjectInline({ trigger, open: controlledOpen, onOpenChang
                   <PlusCircle className="mr-1 h-4 w-4" /> Add Environment
                 </Button>
               </div>
+              {form.formState.errors.environments?.root && (
+                <p className="text-destructive text-sm font-medium">
+                  {form.formState.errors.environments.root.message}
+                </p>
+              )}
               <div className="space-y-2">
                 {fields.map((field, index) => (
                   <div key={field.id} className="grid gap-3 rounded border p-3 md:grid-cols-[1fr_1fr_auto]">

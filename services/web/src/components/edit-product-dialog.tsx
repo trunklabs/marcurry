@@ -14,8 +14,9 @@ import {
   DialogTrigger,
 } from '@/ui/dialog';
 import { Input } from '@/ui/input';
-import { Pencil, Plus, Trash2, X } from 'lucide-react';
+import { Pencil, Plus, Trash2, X, Key } from 'lucide-react';
 import { useToast } from '@/ui/toast';
+import { CopyButton } from '@/components/copy-button';
 import { updateProjectAction } from '@/server/projects';
 import {
   createEnvironmentAction,
@@ -23,7 +24,7 @@ import {
   updateEnvironmentAction,
   listEnvironmentsAction,
 } from '@/server/environments';
-import { slugify } from '@/lib/utils';
+import { slugify, parseErrorMessage } from '@/lib/utils';
 import type { Project, Environment } from '@marcurry/core';
 import { updateProjectSchema, type UpdateProjectInput } from '@/schemas/project-schemas';
 import {
@@ -42,6 +43,7 @@ export function EditProductDialog({ product }: { product: Project }) {
 
   const projectForm = useForm<UpdateProjectInput>({
     resolver: zodResolver(updateProjectSchema),
+    mode: 'onTouched',
     defaultValues: {
       name: product.name,
     },
@@ -49,6 +51,7 @@ export function EditProductDialog({ product }: { product: Project }) {
 
   const addEnvForm = useForm<CreateEnvironmentInput>({
     resolver: zodResolver(createEnvironmentSchema),
+    mode: 'onTouched',
     defaultValues: {
       name: '',
       key: '',
@@ -90,7 +93,7 @@ export function EditProductDialog({ product }: { product: Project }) {
       await updateProjectAction(product.id, data);
       showToast('Project updated');
     } catch (error) {
-      showToast('Failed to update project', 'error');
+      showToast(parseErrorMessage(error, 'Failed to update project'), 'error');
       console.error(error);
     }
   }
@@ -98,15 +101,12 @@ export function EditProductDialog({ product }: { product: Project }) {
   async function onAddEnv(data: CreateEnvironmentInput) {
     try {
       await createEnvironmentAction({ projectId: product.id, ...data });
-      // Refresh envs
       const updatedEnvs = await listEnvironmentsAction(product.id);
       setEnvs(updatedEnvs);
-      // Reset form
       addEnvForm.reset();
       showToast('Environment added');
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to add environment';
-      showToast(message, 'error');
+      showToast(parseErrorMessage(error, 'Failed to add environment'), 'error');
     }
   }
 
@@ -117,7 +117,7 @@ export function EditProductDialog({ product }: { product: Project }) {
       setEnvs(updatedEnvs);
       showToast('Environment removed');
     } catch (error) {
-      showToast('Failed to remove environment', 'error');
+      showToast(parseErrorMessage(error, 'Failed to remove environment'), 'error');
       console.error(error);
     }
   }
@@ -257,6 +257,7 @@ function EnvRow({
 
   const form = useForm<UpdateEnvironmentInput>({
     resolver: zodResolver(updateEnvironmentSchema),
+    mode: 'onTouched',
     defaultValues: {
       name: env.name,
       key: env.key,

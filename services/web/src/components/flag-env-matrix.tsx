@@ -96,7 +96,6 @@ function EnvRow({
           environmentId,
           projectId,
           enabled: next,
-          // gates are preserved when toggling
           gates,
           defaultValue: flagDefaultValue,
         });
@@ -111,10 +110,8 @@ function EnvRow({
     setSaving(true);
     try {
       if (configId) {
-        // Preserve current enabled state, only update gates
         await updateFlagConfigAction(configId, projectId, flagId, { gates });
       } else {
-        // Create new config with current enabled state
         const created = await createFlagConfigAction({
           flagId,
           environmentId,
@@ -136,10 +133,8 @@ function EnvRow({
     setValidationError(error);
   };
 
-  // Validate gates when dialog opens
   useEffect(() => {
     if (open) {
-      // Check if any actors gate has empty actorIds
       const invalidActorsGate = gates.find(
         (gate) => gate.type === 'actors' && (!gate.actorIds || gate.actorIds.length === 0)
       );

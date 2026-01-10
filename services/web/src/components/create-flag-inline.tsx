@@ -20,7 +20,7 @@ import { useRouter } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui/select';
 import type { Project, FlagValueType, FlagValueTypeMap } from '@marcurry/core';
 import { createFlagAction } from '@/server/flags';
-import { slugify } from '@/lib/utils';
+import { slugify, parseErrorMessage } from '@/lib/utils';
 import { createFlagSchema, type CreateFlagInput } from '@/schemas/flag-schemas';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/ui/form';
 
@@ -34,6 +34,7 @@ export function CreateFlagInline(props: { projectId?: string; envId?: string; pr
 
   const form = useForm<CreateFlagInput>({
     resolver: zodResolver(createFlagSchema),
+    mode: 'onTouched',
     defaultValues: {
       projectId: props.projectId || '',
       name: '',
@@ -110,7 +111,7 @@ export function CreateFlagInline(props: { projectId?: string; envId?: string; pr
       form.reset();
       if (pid) router.push(`/app?projectId=${pid}`);
     } catch (error) {
-      showToast('Failed to create flag', 'error');
+      showToast(parseErrorMessage(error, 'Failed to create flag'), 'error');
       console.error(error);
     }
   }

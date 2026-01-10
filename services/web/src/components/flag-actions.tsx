@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -27,6 +29,9 @@ import {
 import { Input } from '@/ui/input';
 import { Label } from '@/ui/label';
 import { updateFlagAction, deleteFlagAction } from '@/server/flags';
+import { updateFlagSchema, type UpdateFlagInput } from '@/schemas/flag-schemas';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/ui/form';
+import { parseErrorMessage } from '@/lib/utils';
 
 interface FlagActionsProps {
   flag: Flag;
@@ -36,41 +41,36 @@ export function FlagActions({ flag }: FlagActionsProps) {
   const router = useRouter();
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [flagName, setFlagName] = useState(flag.name);
 
-  const handleEdit = async () => {
-    if (!flagName.trim()) {
-      toast.error('Flag name is required');
-      return;
-    }
+  const form = useForm<UpdateFlagInput>({
+    resolver: zodResolver(updateFlagSchema),
+    mode: 'onTouched',
+    defaultValues: {
+      name: flag.name,
+    },
+  });
 
-    setIsLoading(true);
+  const handleEdit = async (data: UpdateFlagInput) => {
     try {
-      await updateFlagAction(flag.id, flag.projectId, { name: flagName });
+      await updateFlagAction(flag.id, flag.projectId, data);
       toast.success('Flag updated successfully');
       setEditOpen(false);
       router.refresh();
     } catch (error) {
-      toast.error('Failed to update flag');
+      toast.error(parseErrorMessage(error, 'Failed to update flag'));
       console.error(error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const handleDelete = async () => {
-    setIsLoading(true);
     try {
       await deleteFlagAction(flag.id);
       toast.success('Flag deleted successfully');
       setDeleteOpen(false);
       router.push(`/app/flags?project=${flag.projectId}`);
     } catch (error) {
-      toast.error('Failed to delete flag');
+      toast.error(parseErrorMessage(error, 'Failed to delete flag'));
       console.error(error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -102,35 +102,46 @@ export function FlagActions({ flag }: FlagActionsProps) {
             <DialogTitle>Edit Flag</DialogTitle>
             <DialogDescription>Update the flag name and metadata.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Flag Name</Label>
-              <Input
-                id="name"
-                value={flagName}
-                onChange={(e) => setFlagName(e.target.value)}
-                placeholder="Enter flag name"
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleEdit)} className="space-y-4 py-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Flag Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Enter flag name" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="key">Flag Key</Label>
-              <Input id="key" value={flag.key} disabled className="bg-muted" />
-              <p className="text-muted-foreground text-xs">Key cannot be changed after creation</p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="type">Flag Type</Label>
-              <Input id="type" value={flag.valueType} disabled className="bg-muted" />
-              <p className="text-muted-foreground text-xs">Type cannot be changed after creation</p>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditOpen(false)} disabled={isLoading}>
-              Cancel
-            </Button>
-            <Button onClick={handleEdit} disabled={isLoading}>
-              {isLoading ? 'Saving...' : 'Save Changes'}
-            </Button>
-          </DialogFooter>
+              <div className="space-y-2">
+                <Label htmlFor="key">Flag Key</Label>
+                <Input id="key" value={flag.key} disabled className="bg-muted" />
+                <p className="text-muted-foreground text-xs">Key cannot be changed after creation</p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="type">Flag Type</Label>
+                <Input id="type" value={flag.valueType} disabled className="bg-muted" />
+                <p className="text-muted-foreground text-xs">Type cannot be changed after creation</p>
+              </div>
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setEditOpen(false)}
+                  disabled={form.formState.isSubmitting}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={form.formState.isSubmitting}>
+                  {form.formState.isSubmitting ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
 
@@ -144,13 +155,12 @@ export function FlagActions({ flag }: FlagActionsProps) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              disabled={isLoading}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isLoading ? 'Deleting...' : 'Delete Flag'}
+              Delete Flag
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

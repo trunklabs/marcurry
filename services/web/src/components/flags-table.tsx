@@ -11,6 +11,8 @@ import { toast } from 'sonner';
 import { updateFlagConfigAction, createFlagConfigAction } from '@/server/flags';
 import { FlagActions } from '@/components/flag-actions';
 import { GatesConfigDialog } from '@/components/gates-config-dialog';
+import { KeyDisplay } from '@/components/key-display';
+import { parseErrorMessage } from '@/lib/utils';
 import type { Flag, Environment, FlagEnvironmentConfig, Project } from '@marcurry/core';
 
 interface FlagWithProject extends Flag {
@@ -64,7 +66,6 @@ export function FlagsTable({ flags, showProject = true }: FlagsTableProps) {
 
     try {
       if (!config) {
-        // Config doesn't exist, create it with enabled: true
         await createFlagConfigAction({
           flagId: flag.id,
           environmentId: environment.id,
@@ -75,7 +76,6 @@ export function FlagsTable({ flags, showProject = true }: FlagsTableProps) {
         });
         toast.success(`${flag.name} enabled in ${environment.name}`);
       } else {
-        // Config exists, toggle it
         await updateFlagConfigAction(config.id, flag.projectId, flag.id, {
           enabled: !config.enabled,
         });
@@ -91,10 +91,9 @@ export function FlagsTable({ flags, showProject = true }: FlagsTableProps) {
 
       router.refresh();
     } catch (error) {
-      toast.error('Failed to update flag');
+      toast.error(parseErrorMessage(error, 'Failed to update flag'));
       console.error(error);
 
-      // Clean up state on error
       setTogglingConfigs((prev) => {
         const next = new Set(prev);
         next.delete(configKey);
@@ -203,14 +202,14 @@ export function FlagsTable({ flags, showProject = true }: FlagsTableProps) {
                                   />
                                   <div>
                                     <p className="font-medium">{env.name}</p>
-                                    <p className="text-muted-foreground text-xs">
-                                      <code>{env.key}</code>
+                                    <div className="flex items-center gap-1.5">
+                                      <KeyDisplay value={env.key} />
                                       {gatesCount > 0 && (
-                                        <span className="ml-2">
+                                        <span className="text-muted-foreground text-xs">
                                           · {gatesCount} {gatesCount === 1 ? 'gate' : 'gates'}
                                         </span>
                                       )}
-                                    </p>
+                                    </div>
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -239,7 +238,6 @@ export function FlagsTable({ flags, showProject = true }: FlagsTableProps) {
         </TableBody>
       </Table>
 
-      {/* Gates Configuration Dialog */}
       {gatesDialogOpen && (
         <GatesConfigDialog
           flag={gatesDialogOpen.flag}

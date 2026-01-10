@@ -12,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from '@/ui/radio-group';
 import { createFlagAction, createFlagConfigAction } from '@/server/flags';
 import { listEnvironmentsAction } from '@/server/environments';
 import { toast } from 'sonner';
-import { slugify } from '@/lib/utils';
+import { slugify, parseErrorMessage } from '@/lib/utils';
 import type { Project, FlagValueType, FlagValueTypeMap } from '@marcurry/core';
 import { createFlagSchema, type CreateFlagInput } from '@/schemas/flag-schemas';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/ui/form';
@@ -27,6 +27,7 @@ export function CreateFlagForm({ projects, preselectedProjectId }: CreateFlagFor
 
   const form = useForm<CreateFlagInput>({
     resolver: zodResolver(createFlagSchema),
+    mode: 'onTouched',
     defaultValues: {
       projectId: preselectedProjectId || projects[0]?.id || '',
       name: '',
@@ -110,7 +111,7 @@ export function CreateFlagForm({ projects, preselectedProjectId }: CreateFlagFor
       toast.success('Flag created successfully');
       router.push(`/app/flags?project=${data.projectId}`);
     } catch (error) {
-      toast.error('Failed to create flag');
+      toast.error(parseErrorMessage(error, 'Failed to create flag'));
       console.error(error);
     }
   }

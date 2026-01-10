@@ -10,13 +10,14 @@ import type { Project, Environment } from '@marcurry/core';
 import { Button } from '@/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/ui/dialog';
 import { Input } from '@/ui/input';
+import { KeyDisplay } from '@/components/key-display';
 import {
   listEnvironmentsAction,
   createEnvironmentAction,
   updateEnvironmentAction,
   deleteEnvironmentAction,
 } from '@/server/environments';
-import { slugify } from '@/lib/utils';
+import { slugify, parseErrorMessage } from '@/lib/utils';
 import {
   createEnvironmentSchema,
   updateEnvironmentSchema,
@@ -56,6 +57,7 @@ export function ManageEnvironmentsDialog({ project, open, onOpenChange }: Manage
 
   const addForm = useForm<CreateEnvironmentInput>({
     resolver: zodResolver(createEnvironmentSchema),
+    mode: 'onTouched',
     defaultValues: {
       name: '',
       key: '',
@@ -85,7 +87,7 @@ export function ManageEnvironmentsDialog({ project, open, onOpenChange }: Manage
       await loadEnvironments();
       router.refresh();
     } catch (error) {
-      toast.error('Failed to create environment');
+      toast.error(parseErrorMessage(error, 'Failed to create environment'));
       console.error(error);
     } finally {
       setLoading(false);
@@ -104,7 +106,7 @@ export function ManageEnvironmentsDialog({ project, open, onOpenChange }: Manage
       await loadEnvironments();
       router.refresh();
     } catch (error) {
-      toast.error('Failed to delete environment');
+      toast.error(parseErrorMessage(error, 'Failed to delete environment'));
       console.error(error);
     } finally {
       setLoading(false);
@@ -244,6 +246,7 @@ function EnvRow({
 
   const form = useForm<UpdateEnvironmentInput>({
     resolver: zodResolver(updateEnvironmentSchema),
+    mode: 'onTouched',
     defaultValues: {
       name: env.name,
       key: env.key,
@@ -256,7 +259,7 @@ function EnvRow({
       toast.success('Environment updated');
       await onUpdate();
     } catch (error) {
-      toast.error('Failed to update environment');
+      toast.error(parseErrorMessage(error, 'Failed to update environment'));
       console.error(error);
     }
   }
@@ -308,11 +311,9 @@ function EnvRow({
         </>
       ) : (
         <>
-          <div className="flex-1">
+          <div className="flex-1 space-y-2">
             <div className="font-medium">{env.name}</div>
-            <div className="text-muted-foreground text-sm">
-              <code className="bg-muted rounded px-1 py-0.5">{env.key}</code>
-            </div>
+            <KeyDisplay value={env.key} />
           </div>
           <Button size="icon" variant="ghost" onClick={() => onStartEdit(env.id)} disabled={loading}>
             <Pencil className="h-4 w-4" />

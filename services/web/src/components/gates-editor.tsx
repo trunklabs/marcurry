@@ -21,7 +21,6 @@ export function GatesEditor({ initialGates, valueType, onChange, onValidationCha
   const [gates, setGates] = useState<Gate[]>(initialGates);
 
   const validateGates = (gatesToValidate: Gate[]): { isValid: boolean; error?: string } => {
-    // Check if any actors gate has empty actorIds
     const invalidActorsGate = gatesToValidate.find(
       (gate) => gate.type === 'actors' && (!gate.actorIds || gate.actorIds.length === 0)
     );
@@ -37,7 +36,6 @@ export function GatesEditor({ initialGates, valueType, onChange, onValidationCha
     setGates(newGates);
     onChange?.(newGates);
 
-    // Validate and notify parent
     const validation = validateGates(newGates);
     onValidationChange?.(validation.isValid, validation.error);
   };
@@ -74,7 +72,6 @@ export function GatesEditor({ initialGates, valueType, onChange, onValidationCha
     const newGates = gates.map((gate, i) => {
       if (i !== index) return gate;
       const updated = { ...gate, ...updates };
-      // When changing type, ensure proper shape
       if (updates.type === 'actors' && gate.type !== 'actors') {
         return { ...updated, actorIds: [] } as Gate;
       }
@@ -120,7 +117,6 @@ export function GatesEditor({ initialGates, valueType, onChange, onValidationCha
           {gates.map((gate, index) => (
             <Card key={gate.id} className="relative">
               <CardContent className="space-y-4 pt-6">
-                {/* Gate header with controls */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground text-xs font-medium">Gate #{index + 1}</span>
@@ -158,7 +154,6 @@ export function GatesEditor({ initialGates, valueType, onChange, onValidationCha
                   </Button>
                 </div>
 
-                {/* Enabled toggle */}
                 <div className="flex items-center justify-between">
                   <Label htmlFor={`gate-${index}-enabled`}>Enabled</Label>
                   <Switch
@@ -168,7 +163,6 @@ export function GatesEditor({ initialGates, valueType, onChange, onValidationCha
                   />
                 </div>
 
-                {/* Gate type selector */}
                 <div className="space-y-2">
                   <Label htmlFor={`gate-${index}-type`}>Type</Label>
                   <Select
@@ -185,7 +179,6 @@ export function GatesEditor({ initialGates, valueType, onChange, onValidationCha
                   </Select>
                 </div>
 
-                {/* Actor IDs input (only for actors type) */}
                 {gate.type === 'actors' && (
                   <ActorIdsInput
                     actorIds={gate.actorIds || []}
@@ -193,7 +186,6 @@ export function GatesEditor({ initialGates, valueType, onChange, onValidationCha
                   />
                 )}
 
-                {/* Value input */}
                 <div className="space-y-2">
                   <Label htmlFor={`gate-${index}-value`}>Value to Return</Label>
                   {renderValueInput(gate, index, valueType, (value) => updateGate(index, { value }))}

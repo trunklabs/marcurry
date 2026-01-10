@@ -9,6 +9,7 @@ import { Button } from '@/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/ui/card';
 import { Badge } from '@/ui/badge';
 import { ProjectActions } from '@/components/project-actions';
+import { KeyDisplay } from '@/components/key-display';
 import type { Project, Environment } from '@marcurry/core';
 
 export default async function ProjectsPage() {
@@ -61,8 +62,9 @@ export default async function ProjectsPage() {
             <Card key={project.id} className="flex flex-col">
               <CardHeader>
                 <div className="flex items-start justify-between">
-                  <div className="space-y-1">
+                  <div className="space-y-1.5">
                     <CardTitle>{project.name}</CardTitle>
+                    <KeyDisplay value={project.key} />
                     <CardDescription>
                       {flagCount} {flagCount === 1 ? 'flag' : 'flags'} · {environments.length}{' '}
                       {environments.length === 1 ? 'environment' : 'environments'}

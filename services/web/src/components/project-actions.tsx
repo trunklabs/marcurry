@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { MoreVertical, Pencil, Trash2, Settings, Layers } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -28,6 +30,9 @@ import { Input } from '@/ui/input';
 import { Label } from '@/ui/label';
 import { updateProjectAction, deleteProjectAction } from '@/server/projects';
 import { ManageEnvironmentsDialog } from '@/components/manage-environments-dialog';
+import { updateProjectSchema, type UpdateProjectInput } from '@/schemas/project-schemas';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/ui/form';
+import { parseErrorMessage } from '@/lib/utils';
 
 interface ProjectActionsProps {
   project: Project;
@@ -38,41 +43,36 @@ export function ProjectActions({ project }: ProjectActionsProps) {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [environmentsOpen, setEnvironmentsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [projectName, setProjectName] = useState(project.name);
 
-  const handleEdit = async () => {
-    if (!projectName.trim()) {
-      toast.error('Project name is required');
-      return;
-    }
+  const form = useForm<UpdateProjectInput>({
+    resolver: zodResolver(updateProjectSchema),
+    mode: 'onTouched',
+    defaultValues: {
+      name: project.name,
+    },
+  });
 
-    setIsLoading(true);
+  const handleEdit = async (data: UpdateProjectInput) => {
     try {
-      await updateProjectAction(project.id, { name: projectName });
+      await updateProjectAction(project.id, data);
       toast.success('Project updated successfully');
       setEditOpen(false);
       router.refresh();
     } catch (error) {
-      toast.error('Failed to update project');
+      toast.error(parseErrorMessage(error, 'Failed to update project'));
       console.error(error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const handleDelete = async () => {
-    setIsLoading(true);
     try {
       await deleteProjectAction(project.id);
       toast.success('Project deleted successfully');
       setDeleteOpen(false);
-      router.refresh();
+      router.push('/app/projects');
     } catch (error) {
-      toast.error('Failed to delete project');
+      toast.error(parseErrorMessage(error, 'Failed to delete project'));
       console.error(error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -114,25 +114,36 @@ export function ProjectActions({ project }: ProjectActionsProps) {
             <DialogTitle>Edit Project</DialogTitle>
             <DialogDescription>Update the project name and settings.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Project Name</Label>
-              <Input
-                id="name"
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
-                placeholder="Enter project name"
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleEdit)} className="space-y-4 py-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Project Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Enter project name" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditOpen(false)} disabled={isLoading}>
-              Cancel
-            </Button>
-            <Button onClick={handleEdit} disabled={isLoading}>
-              {isLoading ? 'Saving...' : 'Save Changes'}
-            </Button>
-          </DialogFooter>
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setEditOpen(false)}
+                  disabled={form.formState.isSubmitting}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={form.formState.isSubmitting}>
+                  {form.formState.isSubmitting ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
 
@@ -146,13 +157,12 @@ export function ProjectActions({ project }: ProjectActionsProps) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              disabled={isLoading}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isLoading ? 'Deleting...' : 'Delete Project'}
+              Delete Project
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

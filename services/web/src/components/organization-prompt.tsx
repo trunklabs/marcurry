@@ -35,7 +35,6 @@ export function OrganizationPrompt() {
         </CardHeader>
         <CardContent className="space-y-4">
           <OrganizationSwitcher
-            // hidePersonal
             onSetActive={handleOrganizationCreated}
             trigger={
               <Button className="w-full" size="lg">

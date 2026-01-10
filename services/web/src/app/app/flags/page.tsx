@@ -1,4 +1,4 @@
-import { Flag, FolderKanban, Search } from 'lucide-react';
+import { Flag, FolderKanban } from 'lucide-react';
 import { headers } from 'next/headers';
 import Link from 'next/link';
 import { auth } from '@/lib/auth';
@@ -11,11 +11,7 @@ import { FlagsTable } from '@/components/flags-table';
 import { FlagsFilters } from '@/components/flags-filters';
 import type { Project, Environment, Flag as CoreFlag, FlagEnvironmentConfig } from '@marcurry/core';
 
-export default async function FeatureFlagsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ project?: string; q?: string }>;
-}) {
+export default async function FeatureFlagsPage({ searchParams }: { searchParams: Promise<{ project?: string }> }) {
   const session = await auth.api.getSession({ headers: await headers() });
 
   // If no session, return null and let RedirectToSignIn handle the redirect
@@ -25,7 +21,6 @@ export default async function FeatureFlagsPage({
 
   const params = await searchParams;
   const projectFilter = params.project;
-  const searchQuery = params.q?.toLowerCase() || '';
 
   const projects: Project[] = await listProjectsAction();
 
@@ -75,16 +70,6 @@ export default async function FeatureFlagsPage({
     }
   }
 
-  // Filter flags by search query
-  const filteredFlags = searchQuery
-    ? allFlags.filter(
-        (flag) =>
-          flag.name.toLowerCase().includes(searchQuery) ||
-          flag.key.toLowerCase().includes(searchQuery) ||
-          flag.project.name.toLowerCase().includes(searchQuery)
-      )
-    : allFlags;
-
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -99,32 +84,22 @@ export default async function FeatureFlagsPage({
       </div>
 
       {/* Filters */}
-      <FlagsFilters projects={projects} currentProject={projectFilter} currentSearch={searchQuery} />
+      <FlagsFilters projects={projects} currentProject={projectFilter} />
 
       {/* Flags Table or Empty State */}
-      {filteredFlags.length === 0 ? (
-        searchQuery ? (
-          <Card className="flex flex-col items-center justify-center py-16 text-center">
-            <Search className="text-muted-foreground/50 mb-4 h-12 w-12" />
-            <h3 className="text-lg font-medium">No flags found</h3>
-            <p className="text-muted-foreground mt-1">
-              No flags match &quot;{searchQuery}&quot;. Try a different search.
-            </p>
-          </Card>
-        ) : (
-          <Card className="flex flex-col items-center justify-center py-16 text-center">
-            <Flag className="text-muted-foreground/50 mb-4 h-12 w-12" />
-            <h3 className="text-lg font-medium">No flags yet</h3>
-            <p className="text-muted-foreground mt-1 mb-4">
-              Create your first feature flag to start controlling features.
-            </p>
-            <Button asChild>
-              <Link href="/app/flags/new">Create Flag</Link>
-            </Button>
-          </Card>
-        )
+      {allFlags.length === 0 ? (
+        <Card className="flex flex-col items-center justify-center py-16 text-center">
+          <Flag className="text-muted-foreground/50 mb-4 h-12 w-12" />
+          <h3 className="text-lg font-medium">No flags yet</h3>
+          <p className="text-muted-foreground mt-1 mb-4">
+            Create your first feature flag to start controlling features.
+          </p>
+          <Button asChild>
+            <Link href="/app/flags/new">Create Flag</Link>
+          </Button>
+        </Card>
       ) : (
-        <FlagsTable flags={filteredFlags} showProject={!projectFilter} />
+        <FlagsTable flags={allFlags} showProject={!projectFilter} />
       )}
     </div>
   );

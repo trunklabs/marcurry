@@ -9,7 +9,7 @@ import { Input } from '@/ui/input';
 import { Trash2 } from 'lucide-react';
 import { createProjectAction } from '@/server/projects';
 import { toast } from 'sonner';
-import { slugify } from '@/lib/utils';
+import { slugify, parseErrorMessage } from '@/lib/utils';
 import { createProjectSchema, type CreateProjectInput } from '@/schemas/project-schemas';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/ui/form';
 
@@ -18,6 +18,7 @@ export function CreateProjectForm() {
 
   const form = useForm<CreateProjectInput>({
     resolver: zodResolver(createProjectSchema),
+    mode: 'onTouched',
     defaultValues: {
       name: '',
       key: '',
@@ -58,7 +59,7 @@ export function CreateProjectForm() {
       toast.success('Project created successfully');
       router.push(`/app/projects/${project.id}`);
     } catch (error) {
-      toast.error('Failed to create project');
+      toast.error(parseErrorMessage(error, 'Failed to create project'));
       console.error(error);
     }
   }
@@ -68,7 +69,7 @@ export function CreateProjectForm() {
       <CardContent className="pt-6">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 items-start gap-4">
               <FormField
                 control={form.control}
                 name="name"
@@ -102,10 +103,15 @@ export function CreateProjectForm() {
               />
             </div>
 
-            <div className="space-y-4">
-              <div>
+            <div className="space-y-3">
+              <div className="space-y-1">
                 <FormLabel>Initial Environments</FormLabel>
                 <FormDescription>Every project needs at least one environment.</FormDescription>
+                {form.formState.errors.environments?.root && (
+                  <p className="text-destructive text-sm font-medium">
+                    {form.formState.errors.environments.root.message}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-3">
