@@ -19,10 +19,11 @@ export function ClientProviders({ children }: { children: ReactNode }) {
       Link={Link}
       account
       changeEmail
-      organization
+      organization={{
+        apiKey: true,
+      }}
       apiKey={{
-        prefix: 'app_',
-        metadata: { environment: 'local' },
+        prefix: 'marcurry_pk_',
       }}
     >
       {children}

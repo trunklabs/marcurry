@@ -16,6 +16,7 @@ export type FlagValueType = keyof FlagValueTypeMap;
 export type Project = {
   id: ProjectId;
   name: string;
+  key: string;
 };
 
 /** Represents where your code runs (dev, staging, prod, etc). */

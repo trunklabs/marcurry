@@ -1,3 +1,0 @@
-NODE_ENV=development
-DATABASE_URL=postgres://user:postgres@localhost:5432/marcurry
-NEXT_OUTPUT_MODE=standalone

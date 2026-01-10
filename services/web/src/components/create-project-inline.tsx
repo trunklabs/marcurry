@@ -32,10 +32,19 @@ export function CreateProjectInline({ trigger, open: controlledOpen, onOpenChang
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setOpen = onOpenChange || setInternalOpen;
   const [submitting, setSubmitting] = useState(false);
+  const [projectName, setProjectName] = useState('');
+  const [projectKey, setProjectKey] = useState('');
   const { showToast } = useToast();
   const [envRows, setEnvRows] = useState<Array<{ id: string; name: string; key: string }>>([
     { id: crypto.randomUUID(), name: '', key: '' },
   ]);
+
+  const handleProjectNameChange = (value: string) => {
+    setProjectName(value);
+    if (projectKey === '' || projectKey === slugify(projectName)) {
+      setProjectKey(slugify(value));
+    }
+  };
 
   const trimmedEnvs = envRows.map((r) => ({ name: r.name.trim(), key: r.key.trim() })).filter((e) => e.name.length > 0);
   const hasAtLeastOneEnv = trimmedEnvs.length > 0;
@@ -44,7 +53,9 @@ export function CreateProjectInline({ trigger, open: controlledOpen, onOpenChang
   const hasDuplicateNames = new Set(lowerNames).size !== lowerNames.length;
   const hasDuplicateKeys = new Set(lowerKeys).size !== lowerKeys.length;
   const hasEmptyKeys = trimmedEnvs.some((e) => e.key.length === 0);
-  const canSubmit = hasAtLeastOneEnv && !hasDuplicateNames && !hasDuplicateKeys && !hasEmptyKeys && !submitting;
+  const hasProjectKey = projectKey.trim().length > 0;
+  const canSubmit =
+    hasAtLeastOneEnv && !hasDuplicateNames && !hasDuplicateKeys && !hasEmptyKeys && hasProjectKey && !submitting;
 
   function addEnvRow() {
     setEnvRows((rows) => [...rows, { id: crypto.randomUUID(), name: '', key: '' }]);
@@ -72,9 +83,15 @@ export function CreateProjectInline({ trigger, open: controlledOpen, onOpenChang
   async function handleCreate(formData: FormData) {
     setSubmitting(true);
     try {
-      const name = String(formData.get('name') || '').trim();
+      const name = projectName.trim();
       if (!name) {
         showToast('Name is required', 'error');
+        return;
+      }
+
+      const key = projectKey.trim();
+      if (!key) {
+        showToast('Project key is required', 'error');
         return;
       }
 
@@ -98,9 +115,11 @@ export function CreateProjectInline({ trigger, open: controlledOpen, onOpenChang
         return;
       }
 
-      await createProjectAction({ name, environments: envs });
+      await createProjectAction({ name, key, environments: envs });
       setOpen(false);
       showToast('Project created successfully');
+      setProjectName('');
+      setProjectKey('');
       setEnvRows([{ id: crypto.randomUUID(), name: '', key: '' }]);
     } finally {
       setSubmitting(false);
@@ -126,9 +145,30 @@ export function CreateProjectInline({ trigger, open: controlledOpen, onOpenChang
             <DialogDescription>Add a new project and define at least one environment</DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
-            <Input id="name" name="name" placeholder="My Project" required />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                name="name"
+                placeholder="My Project"
+                value={projectName}
+                onChange={(e) => handleProjectNameChange(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="key">Project Key</Label>
+              <Input
+                id="key"
+                name="key"
+                placeholder="my-project"
+                value={projectKey}
+                onChange={(e) => setProjectKey(e.target.value)}
+                required
+              />
+              <p className="text-muted-foreground text-xs">Used in the SDK</p>
+            </div>
           </div>
 
           <div className="space-y-2">

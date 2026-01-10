@@ -1,6 +1,6 @@
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
-import { Flag, Server, Plus } from 'lucide-react';
+import { Flag, Server, Plus, Key } from 'lucide-react';
 import Link from 'next/link';
 import { auth } from '@/lib/auth';
 import { getProjectAction } from '@/server/projects';
@@ -10,6 +10,7 @@ import { Button } from '@/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/ui/card';
 import { Badge } from '@/ui/badge';
 import { ProjectActions } from '@/components/project-actions';
+import { CopyButton } from '@/components/copy-button';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -55,7 +56,11 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight">{project.name}</h1>
-          <p className="text-muted-foreground text-sm">Project overview and configuration</p>
+          <div className="flex items-center gap-2">
+            <Key className="text-muted-foreground h-3 w-3" />
+            <code className="text-muted-foreground text-sm">{project.key}</code>
+            <CopyButton text={project.key} className="h-6 w-6" />
+          </div>
         </div>
         <ProjectActions project={project} />
       </div>

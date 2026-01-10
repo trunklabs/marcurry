@@ -1,14 +1,9 @@
 import type { Actor, EvaluationResult } from '@marcurry/core';
 
-/**
- * Configuration options for the Marcurry SDK client.
- */
 export type ClientOptions = {
-  /** Your API key for authentication */
   apiKey: string;
-  /** The environment key (e.g., 'production', 'staging') */
+  projectKey: string;
   environmentKey: string;
-  /** Base URL of the Marcurry API (defaults to http://localhost:3000) */
   baseUrl?: string;
 };
 
@@ -62,35 +57,33 @@ const DEFAULT_BASE_URL = 'http://localhost:3000';
 /**
  * Creates a new Marcurry SDK client.
  *
- * @param options - Configuration options for the client
- * @returns A client instance for evaluating feature flags
- *
  * @example
  * ```ts
  * import { createClient } from '@marcurry/sdk';
  *
  * const client = createClient({
- *   apiKey: 'mc_your-api-key',
+ *   apiKey: 'marcurry_pk_xxx',
+ *   projectKey: 'my-project',
  *   environmentKey: 'production',
  *   baseUrl: 'https://your-app.example.com',
  * });
  *
- * // Check if a flag is enabled
  * const enabled = await client.isEnabled('new-feature', { id: 'user-123' });
  *
- * // Get the full evaluation result
  * const result = await client.evaluateFlag('new-feature', { id: 'user-123' });
- * console.log(result.enabled, result.value, result.reason);
  *
- * // Get a typed value with a default
  * const limit = await client.getValue('rate-limit', { id: 'user-123' }, 100);
  * ```
  */
 export function createClient(options: ClientOptions): Client {
-  const { apiKey, environmentKey, baseUrl = DEFAULT_BASE_URL } = options;
+  const { apiKey, projectKey, environmentKey, baseUrl = DEFAULT_BASE_URL } = options;
 
   if (!apiKey) {
     throw new Error('apiKey is required');
+  }
+
+  if (!projectKey) {
+    throw new Error('projectKey is required');
   }
 
   if (!environmentKey) {
@@ -113,6 +106,7 @@ export function createClient(options: ClientOptions): Client {
         'X-API-Key': apiKey,
       },
       body: JSON.stringify({
+        projectKey,
         environmentKey,
         flagKey,
         actor,

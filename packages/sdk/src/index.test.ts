@@ -8,15 +8,27 @@ describe('createClient', () => {
       expect(() =>
         createClient({
           apiKey: '',
+          projectKey: 'project-123',
           environmentKey: 'production',
         })
       ).toThrow('apiKey is required');
+    });
+
+    it('throws when projectKey is missing', () => {
+      expect(() =>
+        createClient({
+          apiKey: 'mc_test-key',
+          projectKey: '',
+          environmentKey: 'production',
+        })
+      ).toThrow('projectKey is required');
     });
 
     it('throws when environmentKey is missing', () => {
       expect(() =>
         createClient({
           apiKey: 'mc_test-key',
+          projectKey: 'project-123',
           environmentKey: '',
         })
       ).toThrow('environmentKey is required');
@@ -25,6 +37,7 @@ describe('createClient', () => {
     it('creates client with valid options', () => {
       const client = createClient({
         apiKey: 'mc_test-key',
+        projectKey: 'project-123',
         environmentKey: 'production',
       });
 
@@ -43,6 +56,7 @@ describe('createClient', () => {
 
       const client = createClient({
         apiKey: 'mc_test-key',
+        projectKey: 'project-123',
         environmentKey: 'production',
       });
 
@@ -62,6 +76,7 @@ describe('createClient', () => {
 
       const client = createClient({
         apiKey: 'mc_test-key',
+        projectKey: 'project-123',
         environmentKey: 'production',
         baseUrl: 'https://api.example.com',
       });
@@ -91,6 +106,7 @@ describe('evaluateFlag', () => {
     it('throws when flagKey is missing', async () => {
       const client = createClient({
         apiKey: 'mc_test-key',
+        projectKey: 'project-123',
         environmentKey: 'production',
       });
 
@@ -100,6 +116,7 @@ describe('evaluateFlag', () => {
     it('throws when actor is missing', async () => {
       const client = createClient({
         apiKey: 'mc_test-key',
+        projectKey: 'project-123',
         environmentKey: 'production',
       });
 
@@ -109,6 +126,7 @@ describe('evaluateFlag', () => {
     it('throws when actor.id is missing', async () => {
       const client = createClient({
         apiKey: 'mc_test-key',
+        projectKey: 'project-123',
         environmentKey: 'production',
       });
 
@@ -118,6 +136,7 @@ describe('evaluateFlag', () => {
     it('throws when actor has no id property', async () => {
       const client = createClient({
         apiKey: 'mc_test-key',
+        projectKey: 'project-123',
         environmentKey: 'production',
       });
 
@@ -141,6 +160,7 @@ describe('evaluateFlag', () => {
 
       const client = createClient({
         apiKey: 'mc_test-key',
+        projectKey: 'project-123',
         environmentKey: 'staging',
         baseUrl: 'https://api.test.com',
       });
@@ -154,6 +174,7 @@ describe('evaluateFlag', () => {
           'X-API-Key': 'mc_test-key',
         },
         body: JSON.stringify({
+          projectKey: 'project-123',
           environmentKey: 'staging',
           flagKey: 'test-flag',
           actor: { id: 'user-456', attributes: { plan: 'premium' } },
@@ -176,6 +197,7 @@ describe('evaluateFlag', () => {
 
       const client = createClient({
         apiKey: 'mc_test-key',
+        projectKey: 'project-123',
         environmentKey: 'production',
       });
 
@@ -195,6 +217,7 @@ describe('evaluateFlag', () => {
 
       const client = createClient({
         apiKey: 'mc_test-key',
+        projectKey: 'project-123',
         environmentKey: 'production',
       });
 
@@ -220,6 +243,7 @@ describe('evaluateFlag', () => {
 
       const client = createClient({
         apiKey: 'mc_test-key',
+        projectKey: 'project-123',
         environmentKey: 'production',
       });
 
@@ -243,6 +267,7 @@ describe('evaluateFlag', () => {
 
       const client = createClient({
         apiKey: 'mc_invalid-key',
+        projectKey: 'project-123',
         environmentKey: 'production',
       });
 
@@ -266,6 +291,7 @@ describe('evaluateFlag', () => {
 
       const client = createClient({
         apiKey: 'mc_test-key',
+        projectKey: 'project-123',
         environmentKey: 'restricted-env',
       });
 
@@ -302,6 +328,7 @@ describe('isEnabled', () => {
 
     const client = createClient({
       apiKey: 'mc_test-key',
+      projectKey: 'project-123',
       environmentKey: 'production',
     });
 
@@ -318,6 +345,7 @@ describe('isEnabled', () => {
 
     const client = createClient({
       apiKey: 'mc_test-key',
+      projectKey: 'project-123',
       environmentKey: 'production',
     });
 
@@ -335,6 +363,7 @@ describe('isEnabled', () => {
 
     const client = createClient({
       apiKey: 'mc_test-key',
+      projectKey: 'project-123',
       environmentKey: 'production',
     });
 
@@ -348,6 +377,7 @@ describe('isEnabled', () => {
 
     const client = createClient({
       apiKey: 'mc_test-key',
+      projectKey: 'project-123',
       environmentKey: 'production',
     });
 
@@ -365,6 +395,7 @@ describe('isEnabled', () => {
 
     const client = createClient({
       apiKey: 'mc_test-key',
+      projectKey: 'project-123',
       environmentKey: 'production',
     });
 
@@ -394,6 +425,7 @@ describe('getValue', () => {
 
     const client = createClient({
       apiKey: 'mc_test-key',
+      projectKey: 'project-123',
       environmentKey: 'production',
     });
 
@@ -410,6 +442,7 @@ describe('getValue', () => {
 
     const client = createClient({
       apiKey: 'mc_test-key',
+      projectKey: 'project-123',
       environmentKey: 'production',
     });
 
@@ -427,6 +460,7 @@ describe('getValue', () => {
 
     const client = createClient({
       apiKey: 'mc_test-key',
+      projectKey: 'project-123',
       environmentKey: 'production',
     });
 
@@ -444,6 +478,7 @@ describe('getValue', () => {
 
     const client = createClient({
       apiKey: 'mc_test-key',
+      projectKey: 'project-123',
       environmentKey: 'production',
     });
 
@@ -457,6 +492,7 @@ describe('getValue', () => {
 
     const client = createClient({
       apiKey: 'mc_test-key',
+      projectKey: 'project-123',
       environmentKey: 'production',
     });
 
@@ -474,6 +510,7 @@ describe('getValue', () => {
 
     const client = createClient({
       apiKey: 'mc_test-key',
+      projectKey: 'project-123',
       environmentKey: 'production',
     });
 
